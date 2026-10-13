@@ -130,14 +130,16 @@ components:
       required: [metodo]
       properties:
         metodo: { type: string, enum: [en_linea] }
-        tokenPago: { type: string, description: Token simulado de la pasarela (MVP) }
+        tokenPago:
+          type: string
+          description: Token simulado de la pasarela (MVP). Un valor que empieza con "rech" simula un pago rechazado.
     Pago:
+      description: Pago confirmado (un solo pago por pedido; sólo se persiste el aprobado).
       type: object
       properties:
         id: { type: integer }
-        metodo: { type: string, enum: [en_linea, efectivo] }
+        metodo: { type: string, enum: [online, efectivo] }
         monto: { type: number, format: double }
-        estado: { type: string, enum: [pendiente, aprobado, rechazado] }
         referencia: { type: string, nullable: true }
     Error:
       type: object

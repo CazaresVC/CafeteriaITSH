@@ -46,17 +46,21 @@ WHERE (d.nombre, h.nombre) IN (
 );
 
 -- ------------------------------------------------------------
--- Platillos de ejemplo (catálogo)
+-- Platillos de ejemplo (catálogo) — idempotente por nombre
 -- ------------------------------------------------------------
-INSERT IGNORE INTO platillo (nombre, categoria, descripcion) VALUES
-  ('Gordita de chicharrón',  'Comida',   'Gordita de maíz con chicharrón prensado'),
-  ('Gordita de frijol',      'Comida',   'Gordita de maíz con frijoles refritos'),
-  ('Quesadilla de queso',    'Comida',   'Tortilla de maíz con queso Oaxaca'),
-  ('Torta de jamón',         'Comida',   'Torta con jamón, queso y aguacate'),
-  ('Café de olla',           'Bebida',   'Café de olla con piloncillo y canela'),
-  ('Jugo de naranja',        'Bebida',   'Jugo de naranja natural 500 ml'),
-  ('Agua de horchata',       'Bebida',   'Agua fresca de horchata 500 ml'),
-  ('Pan con huevo',          'Comida',   'Pan dulce con huevo revuelto');
+INSERT INTO platillo (nombre, categoria, descripcion)
+SELECT n.nombre, n.categoria, n.descripcion
+FROM (
+            SELECT 'Gordita de chicharrón' AS nombre, 'Comida' AS categoria, 'Gordita de maíz con chicharrón prensado' AS descripcion
+  UNION ALL SELECT 'Gordita de frijol',     'Comida', 'Gordita de maíz con frijoles refritos'
+  UNION ALL SELECT 'Quesadilla de queso',   'Comida', 'Tortilla de maíz con queso Oaxaca'
+  UNION ALL SELECT 'Torta de jamón',        'Comida', 'Torta con jamón, queso y aguacate'
+  UNION ALL SELECT 'Café de olla',          'Bebida', 'Café de olla con piloncillo y canela'
+  UNION ALL SELECT 'Jugo de naranja',       'Bebida', 'Jugo de naranja natural 500 ml'
+  UNION ALL SELECT 'Agua de horchata',      'Bebida', 'Agua fresca de horchata 500 ml'
+  UNION ALL SELECT 'Pan con huevo',         'Comida', 'Pan dulce con huevo revuelto'
+) AS n
+WHERE NOT EXISTS (SELECT 1 FROM platillo p WHERE p.nombre = n.nombre);
 
 -- ------------------------------------------------------------
 -- Menú de hoy (ejemplo) — precios congelados al agregarlo
