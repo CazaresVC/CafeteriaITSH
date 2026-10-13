@@ -38,15 +38,15 @@ Los datos de acceso:
 Desde la carpeta del proyecto. La forma más segura es redirigir el archivo con `<`, disponible en **CMD**:
 
 ```cmd
-mysql -u cafe_admin -p -h 127.0.0.1 -P 3306 cafe_itsh < migrations\001_crear_esquema.sql
-mysql -u cafe_admin -p -h 127.0.0.1 -P 3306 cafe_itsh < migrations\002_seed_inicial.sql
+mysql -u cafe_admin -p -h 127.0.0.1 -P 3306 cafe_itsh < database\migrations\001_crear_esquema.sql
+mysql -u cafe_admin -p -h 127.0.0.1 -P 3306 cafe_itsh < database\migrations\002_seed_inicial.sql
 ```
 
 En **PowerShell** el `<` no existe, así que invoca CMD desde PowerShell (así se preservan los acentos UTF-8 del script):
 
 ```powershell
-cmd /c "mysql -u cafe_admin -p -h 127.0.0.1 -P 3306 cafe_itsh < migrations\001_crear_esquema.sql"
-cmd /c "mysql -u cafe_admin -p -h 127.0.0.1 -P 3306 cafe_itsh < migrations\002_seed_inicial.sql"
+cmd /c "mysql -u cafe_admin -p -h 127.0.0.1 -P 3306 cafe_itsh < database\migrations\001_crear_esquema.sql"
+cmd /c "mysql -u cafe_admin -p -h 127.0.0.1 -P 3306 cafe_itsh < database\migrations\002_seed_inicial.sql"
 ```
 
 > No uses `Get-Content ... | mysql` en PowerShell 5.1: el pipe recodifica el texto y corrompe los acentos (guarda los archivos `.sql` en UTF-8).
@@ -56,7 +56,7 @@ cmd /c "mysql -u cafe_admin -p -h 127.0.0.1 -P 3306 cafe_itsh < migrations\002_s
 Si `mysql` no está en el PATH, usa la ruta completa:
 
 ```powershell
-cmd /c '"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u cafe_admin -p -h 127.0.0.1 -P 3306 cafe_itsh < migrations\001_crear_esquema.sql'
+cmd /c '"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u cafe_admin -p -h 127.0.0.1 -P 3306 cafe_itsh < database\migrations\001_crear_esquema.sql'
 ```
 
 ## Ejecutar desde el cliente interactivo (`mysql>`)
@@ -69,8 +69,8 @@ mysql -u cafe_admin -p -h 127.0.0.1 -P 3306
 
 ```sql
 mysql> use cafe_itsh;
-mysql> source C:/cafeITSH/cafeITSH/migrations/001_crear_esquema.sql;
-mysql> source C:/cafeITSH/cafeITSH/migrations/002_seed_inicial.sql;
+mysql> source C:/cafeITSH/database/migrations/001_crear_esquema.sql;
+mysql> source C:/cafeITSH/database/migrations/002_seed_inicial.sql;
 ```
 
 Usa `/` en las rutas (también sirve `\\`); evita `\` simple porque el cliente lo interpreta como escape.
@@ -78,9 +78,9 @@ Usa `/` en las rutas (también sirve `\\`); evita `\` simple porque el cliente l
 ## Ejecutar con DBeaver
 
 1. Abre DBeaver y crea una conexión a **MySQL** con los datos de la tabla de arriba.
-2. Abre el archivo `migrations/001_crear_esquema.sql` en un editor SQL.
+2. Abre el archivo `database/migrations/001_crear_esquema.sql` en un editor SQL.
 3. Selecciona toda la consulta y ejecuta (Alt+X o botón SQL → Execute SQL script).
-4. Repite con `migrations/002_seed_inicial.sql`.
+4. Repite con `database/migrations/002_seed_inicial.sql`.
 
 ## Verificar que todo quedó bien
 
