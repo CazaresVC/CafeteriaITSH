@@ -1,0 +1,184 @@
+openapi: 3.0.3
+info:
+  title: Cafetería ITSH — Seguimiento y notificaciones (Sprint 5)
+  version: 1.0.0
+  description: >-
+    Contratos REST del seguimiento de pedidos del cliente y las notificaciones de "pedido
+    listo". La sesión se transporta en una cookie httpOnly (`token`). Todas las respuestas de
+    error usan el sobre uniforme `{ error: { codigo, mensaje } }`. Un cliente solo puede
+    consultar sus propios pedidos y notificaciones (autorización de propiedad).
+servers:
+  - url: /api
+paths:
+  /pedidos/mios:
+    get:
+      summary: Listar los pedidos del cliente autenticado con su estado actual
+      tags: [Pedidos]
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Pedidos propios ordenados por fecha de creación descendente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PedidoResumen'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /pedidos/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Identificador del pedido
+        schema: { type: integer }
+    get:
+      summary: Consultar el detalle de un pedido propio (platillos, cantidades y total)
+      tags: [Pedidos]
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Detalle del pedido propio
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoDetalle'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: >-
+            El pedido no existe o no pertenece al cliente (se responde 404 para no revelar la
+            existencia de pedidos ajenos)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /notificaciones/mias:
+    get:
+      summary: Listar las notificaciones del cliente autenticado
+      tags: [Notificaciones]
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Notificaciones propias ordenadas por fecha descendente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notificacion'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /notificaciones/{id}/vista:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Identificador de la notificación
+        schema: { type: integer }
+    patch:
+      summary: Marcar una notificación propia como vista
+      tags: [Notificaciones]
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Notificación marcada como vista
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notificacion'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: >-
+            La notificación no existe o no pertenece al cliente (se responde 404 para no
+            revelar notificaciones ajenas)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+  schemas:
+    EstadoPedido:
+      type: string
+      enum: [Pendiente, Pagado, En preparación, Listo, Entregado, Cancelado]
+    TipoPedido:
+      type: string
+      enum: [anticipado, mostrador]
+    PedidoResumen:
+      type: object
+      properties:
+        id: { type: integer }
+        numero: { type: string }
+        tipo: { $ref: '#/components/schemas/TipoPedido' }
+        estado: { $ref: '#/components/schemas/EstadoPedido' }
+        total: { type: number, format: double, minimum: 0 }
+        fecha_recoleccion: { type: string, format: date-time, nullable: true }
+        creado_en: { type: string, format: date-time }
+    DetalleLinea:
+      type: object
+      properties:
+        platillo: { type: string }
+        cantidad: { type: integer, minimum: 1 }
+        precio_unitario: { type: number, format: double, minimum: 0 }
+        subtotal: { type: number, format: double, minimum: 0 }
+    PedidoDetalle:
+      allOf:
+        - $ref: '#/components/schemas/PedidoResumen'
+        - type: object
+          properties:
+            lineas:
+              type: array
+              items:
+                $ref: '#/components/schemas/DetalleLinea'
+    Notificacion:
+      type: object
+      properties:
+        id: { type: integer }
+        pedido_id: { type: integer }
+        numero: { type: string, description: Folio del pedido asociado }
+        tipo: { type: string, example: pedido_listo }
+        canal: { type: string, enum: [correo, push, sms] }
+        estado_envio: { type: string, enum: [pendiente, enviada, fallida] }
+        fecha: { type: string, format: date-time }
+        vista: { type: boolean }
+        detalle_error: { type: string, nullable: true }
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            codigo: { type: string }
+            mensaje: { type: string }
+  responses:
+    Unauthorized:
+      description: Sesión ausente o inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: El rol del usuario no permite la operación
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

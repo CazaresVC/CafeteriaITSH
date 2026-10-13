@@ -1,0 +1,169 @@
+openapi: 3.0.3
+info:
+  title: API de pedido anticipado y pago (Sprint 3)
+  version: 1.0.0
+  description: >
+    Endpoints para crear un pedido anticipado, consultarlo y pagarlo en línea. Todas las rutas
+    requieren sesión (cookie httpOnly `token`) con rol `usuario`.
+servers:
+  - url: /api
+paths:
+  /pedidos:
+    post:
+      summary: Crear un pedido anticipado (rol usuario)
+      tags: [Pedidos]
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PedidoInput' }
+      responses:
+        '201':
+          description: Pedido creado en estado Pendiente
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Pedido' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422':
+          description: Fuera de la ventana de pedido anticipado o platillo no disponible
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /pedidos/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    get:
+      summary: Consultar un pedido (sólo el propio)
+      tags: [Pedidos]
+      security: [{ cookieAuth: [] }]
+      responses:
+        '200':
+          description: Detalle del pedido
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Pedido' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /pedidos/{id}/pagar:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    post:
+      summary: Pagar un pedido anticipado en línea (idempotente)
+      tags: [Pagos]
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PagoInput' }
+      responses:
+        '200':
+          description: Pago aprobado; el pedido pasa a Pagado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Pedido' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: El pedido no está en un estado que permita pagarse
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '422':
+          description: Pago rechazado por la pasarela
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+  schemas:
+    PedidoInput:
+      type: object
+      required: [lineas]
+      properties:
+        lineas:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [platilloId, cantidad]
+            properties:
+              platilloId: { type: integer }
+              cantidad: { type: integer, minimum: 1 }
+    LineaPedido:
+      type: object
+      properties:
+        platilloId: { type: integer }
+        nombre: { type: string }
+        cantidad: { type: integer }
+        precioUnitario: { type: number, format: double }
+        subtotal: { type: number, format: double }
+    Pedido:
+      type: object
+      properties:
+        id: { type: integer }
+        numero: { type: string }
+        tipo: { type: string, enum: [anticipado, mostrador] }
+        estado: { type: string, enum: [Pendiente, Pagado, "En preparación", Listo, Entregado, Cancelado] }
+        total: { type: number, format: double }
+        lineas:
+          type: array
+          items: { $ref: '#/components/schemas/LineaPedido' }
+        pago: { $ref: '#/components/schemas/Pago' }
+        creadoEn: { type: string, format: date-time }
+    PagoInput:
+      type: object
+      required: [metodo]
+      properties:
+        metodo: { type: string, enum: [en_linea] }
+        tokenPago: { type: string, description: Token simulado de la pasarela (MVP) }
+    Pago:
+      type: object
+      properties:
+        id: { type: integer }
+        metodo: { type: string, enum: [en_linea, efectivo] }
+        monto: { type: number, format: double }
+        estado: { type: string, enum: [pendiente, aprobado, rechazado] }
+        referencia: { type: string, nullable: true }
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+        detalles:
+          type: array
+          items: { type: object }
+  responses:
+    BadRequest:
+      description: Datos de entrada inválidos
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Sin sesión válida
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Rol sin permiso o pedido ajeno
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }

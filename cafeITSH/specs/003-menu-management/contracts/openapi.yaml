@@ -1,0 +1,233 @@
+openapi: 3.0.3
+info:
+  title: API de gestión y consulta del menú (Sprint 2)
+  version: 1.0.0
+  description: >
+    Endpoints para que el administrador mantenga el catálogo de platillos y el menú del día, y
+    para que cualquier usuario autenticado consulte el menú de una fecha. Todas las rutas
+    requieren sesión (cookie httpOnly `token`).
+servers:
+  - url: /api
+paths:
+  /platillos:
+    get:
+      summary: Listar el catálogo de platillos
+      tags: [Platillos]
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - in: query
+          name: activo
+          schema: { type: boolean }
+          description: Filtra por estado activo/inactivo
+      responses:
+        '200':
+          description: Lista de platillos
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Platillo' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      summary: Crear un platillo (administrador)
+      tags: [Platillos]
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlatilloInput' }
+      responses:
+        '201':
+          description: Platillo creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Platillo' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /platillos/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    patch:
+      summary: Editar un platillo (administrador)
+      tags: [Platillos]
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlatilloPatch' }
+      responses:
+        '200':
+          description: Platillo actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Platillo' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      summary: Retirar un platillo del catálogo (baja lógica, administrador)
+      tags: [Platillos]
+      security: [{ cookieAuth: [] }]
+      responses:
+        '204': { description: Platillo desactivado }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /menu:
+    get:
+      summary: Consultar el menú del día (o de una fecha)
+      tags: [Menú]
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - in: query
+          name: fecha
+          schema: { type: string, format: date }
+          description: Fecha del menú (por defecto, hoy)
+      responses:
+        '200':
+          description: Ítems del menú para la fecha
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/MenuItem' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      summary: Agregar un platillo al menú de una fecha (administrador)
+      tags: [Menú]
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MenuItemInput' }
+      responses:
+        '201':
+          description: Ítem agregado al menú
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MenuItem' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: El platillo ya está en el menú de esa fecha }
+  /menu/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    patch:
+      summary: Actualizar precio, disponibilidad o especial de un ítem del menú (administrador)
+      tags: [Menú]
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MenuItemPatch' }
+      responses:
+        '200':
+          description: Ítem actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MenuItem' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      summary: Quitar un platillo del menú de una fecha (administrador)
+      tags: [Menú]
+      security: [{ cookieAuth: [] }]
+      responses:
+        '204': { description: Ítem eliminado del menú }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+  schemas:
+    Platillo:
+      type: object
+      properties:
+        id: { type: integer }
+        nombre: { type: string }
+        categoria: { type: string, nullable: true }
+        descripcion: { type: string, nullable: true }
+        activo: { type: boolean }
+    PlatilloInput:
+      type: object
+      required: [nombre]
+      properties:
+        nombre: { type: string, minLength: 1, maxLength: 100 }
+        categoria: { type: string, maxLength: 50 }
+        descripcion: { type: string }
+        activo: { type: boolean, default: true }
+    PlatilloPatch:
+      type: object
+      properties:
+        nombre: { type: string, minLength: 1, maxLength: 100 }
+        categoria: { type: string, maxLength: 50 }
+        descripcion: { type: string }
+        activo: { type: boolean }
+    MenuItem:
+      type: object
+      properties:
+        id: { type: integer }
+        fecha: { type: string, format: date }
+        platilloId: { type: integer }
+        nombre: { type: string }
+        categoria: { type: string, nullable: true }
+        descripcion: { type: string, nullable: true }
+        precio: { type: number, format: double }
+        disponible: { type: boolean }
+        especial: { type: boolean }
+    MenuItemInput:
+      type: object
+      required: [fecha, platilloId, precio]
+      properties:
+        fecha: { type: string, format: date }
+        platilloId: { type: integer }
+        precio: { type: number, format: double, minimum: 0 }
+        disponible: { type: boolean, default: true }
+        especial: { type: boolean, default: false }
+    MenuItemPatch:
+      type: object
+      properties:
+        precio: { type: number, format: double, minimum: 0 }
+        disponible: { type: boolean }
+        especial: { type: boolean }
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+        detalles:
+          type: array
+          items: { type: object }
+  responses:
+    BadRequest:
+      description: Datos de entrada inválidos
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Sin sesión válida
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Rol sin permiso
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
