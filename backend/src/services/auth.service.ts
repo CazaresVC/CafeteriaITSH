@@ -1,9 +1,50 @@
 import type { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import { query } from '../config/db';
+import { env } from '../config/env';
 import { ErrorConflicto, ErrorCredenciales, ErrorNoEncontrado } from '../utils/errors';
 import { hashPassword, verificarPassword } from '../utils/password';
 import { esRolValido } from '../utils/roles';
 import type { UsuarioPublico } from '../tipos';
+
+// Hash señuelo: se compara cuando el correo no existe para igualar el tiempo
+// de respuesta y no revelar si la cuenta existe (comparación de tiempo constante).
+const HASH_SEÑUELO = '$2a$10$7pf6JsockZK6/w9GDrOGAecDXKFsHHz8uBbUpvEbLe58AJGRpvQPy';
+const MAX_INTENTOS = 8;
+const VENTANA_BLOQUEO_MS = 5 * 60 * 1000;
+const RETARDO_FALLO_MS = 300;
+
+interface RegistroIntentos {
+  conteo: number;
+  hasta: number;
+}
+
+const intentosPorCorreo = new Map<string, RegistroIntentos>();
+
+function claveCorreo(correo: string): string {
+  return correo.trim().toLowerCase();
+}
+
+function retardoFallo(): Promise<void> {
+  if (env.nodeEnv === 'test') return Promise.resolve();
+  return new Promise((resolver) => setTimeout(resolver, RETARDO_FALLO_MS));
+}
+
+function registrarFallo(clave: string): void {
+  const ahora = Date.now();
+  const registro = intentosPorCorreo.get(clave);
+  const conteo = (registro && ahora < registro.hasta ? registro.conteo : 0) + 1;
+  intentosPorCorreo.set(clave, { conteo, hasta: ahora + VENTANA_BLOQUEO_MS });
+}
+
+function estaBloqueado(clave: string): boolean {
+  const registro = intentosPorCorreo.get(clave);
+  if (!registro) return false;
+  if (Date.now() >= registro.hasta) {
+    intentosPorCorreo.delete(clave);
+    return false;
+  }
+  return registro.conteo >= MAX_INTENTOS;
+}
 
 interface FilaUsuario extends RowDataPacket {
   id: number;
@@ -45,18 +86,28 @@ export async function obtenerRolId(nombre: string): Promise<number> {
 }
 
 export async function autenticar(correo: string, password: string): Promise<UsuarioPublico> {
+  const clave = claveCorreo(correo);
+  if (estaBloqueado(clave)) {
+    throw new ErrorCredenciales();
+  }
   const filas = await query<FilaUsuario[]>(
     `${SELECT_USUARIO} WHERE u.correo = ? LIMIT 1`,
     [correo],
   );
   const fila = filas[0];
   if (!fila) {
+    await verificarPassword(password, HASH_SEÑUELO);
+    registrarFallo(clave);
+    await retardoFallo();
     throw new ErrorCredenciales();
   }
   const coincide = await verificarPassword(password, fila.password_hash);
   if (!coincide || !fila.activo) {
+    registrarFallo(clave);
+    await retardoFallo();
     throw new ErrorCredenciales();
   }
+  intentosPorCorreo.delete(clave);
   return aUsuarioPublico(fila);
 }
 

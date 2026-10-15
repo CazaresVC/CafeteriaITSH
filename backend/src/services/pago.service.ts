@@ -81,3 +81,40 @@ export async function pagar(
 
   return obtener(pedidoId, usuarioId);
 }
+
+export async function registrarCobro(pedidoId: number, cajeroId: number): Promise<Pedido> {
+  const estadoPagadoId = await obtenerEstadoId(PAGADO);
+
+  await conTransaccion(async (conn) => {
+    const [filas] = await conn.execute<FilaPedidoPago[]>(
+      `SELECT pe.id,
+              pe.usuario_id AS usuarioId,
+              pe.total,
+              pe.estado_id AS estadoId,
+              e.nombre AS estado
+         FROM pedido pe
+         JOIN estado_pedido e ON e.id = pe.estado_id
+        WHERE pe.id = ?
+        FOR UPDATE`,
+      [pedidoId],
+    );
+    const pedido = filas[0];
+    if (!pedido) {
+      throw new ErrorNoEncontrado('Pedido no encontrado');
+    }
+    if (pedido.estado !== PENDIENTE) {
+      throw new ErrorConflicto('El pedido no está pendiente de cobro');
+    }
+
+    const total = redondear(Number(pedido.total));
+    await conn.execute(
+      `INSERT INTO pago (pedido_id, metodo, monto, referencia, registrado_por)
+       VALUES (?, 'efectivo', ?, NULL, ?)`,
+      [pedidoId, total, cajeroId],
+    );
+    await validarTransicion(pedido.estadoId, estadoPagadoId, conn);
+    await registrarCambio(conn, pedidoId, pedido.estadoId, estadoPagadoId, cajeroId);
+  });
+
+  return obtener(pedidoId, undefined, { incluirHistorial: true });
+}

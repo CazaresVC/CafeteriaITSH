@@ -10,7 +10,11 @@ import {
 import { mensajeDeError } from '../../lib/api';
 import { PlatilloForm } from '../../components/menu/PlatilloForm';
 import { Button } from '../../components/ui/button';
+import { Badge } from '../../components/ui/badge';
+import { EmptyState } from '../../components/ui/empty-state';
+import { PageHeader } from '../../components/ui/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { IconoDesactivar, IconoEditar, IconoPlatillos } from '../../components/iconos';
 
 export function Platillos() {
   const { data: platillos, isLoading } = usePlatillos();
@@ -46,6 +50,12 @@ export function Platillos() {
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        icono={<IconoPlatillos className="h-5 w-5" />}
+        titulo="Catálogo de platillos"
+        descripcion="Registra platillos y controla cuáles están activos para ofrecerse en el menú."
+      />
+
       <Card>
         <CardHeader>
           <CardTitle>{editando ? 'Editar platillo' : 'Nuevo platillo'}</CardTitle>
@@ -59,7 +69,7 @@ export function Platillos() {
             onCancelar={editando ? () => setEditando(null) : undefined}
           />
           {error && (
-            <p className="mt-3 text-sm text-red-600" role="alert">
+            <p className="mt-3 text-sm text-error" role="alert">
               {error}
             </p>
           )}
@@ -68,49 +78,68 @@ export function Platillos() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Catálogo de platillos</CardTitle>
+          <CardTitle>Platillos</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <p className="text-sm text-slate-500">Cargando…</p>
+            <p className="text-sm text-on-surface-variant">Cargando…</p>
           ) : !platillos || platillos.length === 0 ? (
-            <p className="text-sm text-slate-500">Aún no hay platillos registrados.</p>
+            <EmptyState
+              titulo="El catálogo está vacío"
+              descripcion="Agrega tu primer platillo con el formulario de arriba."
+            />
           ) : (
-            <table className="w-full text-left text-sm">
-              <thead className="text-slate-500">
-                <tr>
-                  <th className="py-2">Nombre</th>
-                  <th className="py-2">Categoría</th>
-                  <th className="py-2">Estado</th>
-                  <th className="py-2" />
-                </tr>
-              </thead>
-              <tbody>
-                {platillos.map((platillo) => (
-                  <tr key={platillo.id} className="border-t border-slate-100">
-                    <td className="py-2">{platillo.nombre}</td>
-                    <td className="py-2">{platillo.categoria ?? '—'}</td>
-                    <td className="py-2">{platillo.activo ? 'Activo' : 'Inactivo'}</td>
-                    <td className="py-2">
-                      <div className="flex justify-end gap-2">
-                        <Button variante="secondary" onClick={() => setEditando(platillo)}>
-                          Editar
-                        </Button>
-                        {platillo.activo && (
-                          <Button
-                            variante="danger"
-                            onClick={() => desactivarPlatillo(platillo.id)}
-                            disabled={desactivar.isPending}
-                          >
-                            Desactivar
-                          </Button>
-                        )}
-                      </div>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="text-xs uppercase tracking-wide text-on-surface-variant">
+                    <th className="rounded-l-lg bg-surface-container px-4 py-3 font-semibold">
+                      Nombre
+                    </th>
+                    <th className="bg-surface-container px-4 py-3 font-semibold">Categoría</th>
+                    <th className="bg-surface-container px-4 py-3 font-semibold">Estado</th>
+                    <th className="rounded-r-lg bg-surface-container px-4 py-3" />
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {platillos.map((platillo) => (
+                    <tr key={platillo.id} className="border-b border-surface-container-high">
+                      <td className="px-4 py-3 font-medium text-on-surface">{platillo.nombre}</td>
+                      <td className="px-4 py-3">
+                        {platillo.categoria ? (
+                          <Badge tono="neutral">{platillo.categoria}</Badge>
+                        ) : (
+                          <span className="text-on-surface-variant">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge tono={platillo.activo ? 'success' : 'error'}>
+                          {platillo.activo ? 'Activo' : 'Inactivo'}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex justify-end gap-2">
+                          <Button variante="secondary" onClick={() => setEditando(platillo)}>
+                            <IconoEditar className="h-4 w-4" />
+                            Editar
+                          </Button>
+                          {platillo.activo && (
+                            <Button
+                              variante="danger"
+                              onClick={() => desactivarPlatillo(platillo.id)}
+                              disabled={desactivar.isPending}
+                            >
+                              <IconoDesactivar className="h-4 w-4" />
+                              Desactivar
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </CardContent>
       </Card>

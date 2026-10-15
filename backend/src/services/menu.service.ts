@@ -2,7 +2,7 @@ import type { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import type { Parametro } from '../config/db';
 import { query } from '../config/db';
 import { ErrorConflicto, ErrorNoEncontrado } from '../utils/errors';
-import type { MenuItem } from '../tipos';
+import type { MenuItem, ResultadoRepublicacion } from '../tipos';
 import type { MenuItemInput, MenuItemPatch } from '../utils/schemas/menu.schema';
 
 interface FilaPlatillo extends RowDataPacket {
@@ -149,4 +149,53 @@ export async function actualizar(id: number, datos: MenuItemPatch): Promise<Menu
 export async function quitar(id: number): Promise<void> {
   await buscarItem(id);
   await query<ResultSetHeader>('DELETE FROM menu_dia WHERE id = ?', [id]);
+}
+
+interface FilaOrigen extends RowDataPacket {
+  origen: string | null;
+}
+
+interface FilaConteo extends RowDataPacket {
+  total: number;
+}
+
+export async function republicar(fechaDestino: string): Promise<ResultadoRepublicacion> {
+  const origenFilas = await query<FilaOrigen[]>(
+    'SELECT MAX(fecha) AS origen FROM menu_dia WHERE fecha <> ?',
+    [fechaDestino],
+  );
+  const origen = origenFilas[0]?.origen ?? null;
+  if (!origen) {
+    throw new ErrorNoEncontrado('No hay un menú previo para republicar');
+  }
+
+  const conteoFilas = await query<FilaConteo[]>(
+    `SELECT COUNT(*) AS total
+       FROM menu_dia m
+       JOIN platillo p ON p.id = m.platillo_id AND p.activo = 1
+      WHERE m.fecha = ?`,
+    [origen],
+  );
+  const origenTotal = Number(conteoFilas[0]?.total ?? 0);
+
+  const resultado = await query<ResultSetHeader>(
+    `INSERT INTO menu_dia (fecha, platillo_id, precio, disponible, especial)
+     SELECT ?, m.platillo_id, m.precio, m.disponible, m.especial
+       FROM menu_dia m
+       JOIN platillo p ON p.id = m.platillo_id AND p.activo = 1
+      WHERE m.fecha = ?
+        AND NOT EXISTS (
+          SELECT 1 FROM menu_dia d
+           WHERE d.fecha = ? AND d.platillo_id = m.platillo_id
+        )`,
+    [fechaDestino, origen, fechaDestino],
+  );
+
+  const agregados = resultado.affectedRows;
+  return {
+    fecha: fechaDestino,
+    origen,
+    agregados,
+    omitidos: Math.max(0, origenTotal - agregados),
+  };
 }

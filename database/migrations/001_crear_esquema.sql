@@ -6,6 +6,10 @@
 -- Idempotente: puede ejecutarse varias veces sin error.
 -- ============================================================
 
+-- Forzar UTF-8 en la sesión para que los acentos no se corrompan
+-- al cargar con el cliente mysql en Windows (charset por defecto cp850).
+SET NAMES utf8mb4;
+
 -- ------------------------------------------------------------
 -- Catálogo de roles
 -- ------------------------------------------------------------

@@ -6,6 +6,7 @@ import type { Platillo, PlatilloInput } from '../../lib/menu';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { IconoAgregar, IconoCheck } from '../iconos';
 
 const esquema = z.object({
   nombre: z.string().trim().min(1, 'El nombre es obligatorio').max(100, 'Máximo 100 caracteres'),
@@ -54,22 +55,23 @@ export function PlatilloForm({ inicial = null, enviando = false, onSubmit, onCan
       <div className="space-y-1">
         <Label htmlFor="platillo-nombre">Nombre</Label>
         <Input id="platillo-nombre" {...register('nombre')} />
-        {errors.nombre && <p className="text-sm text-red-600">{errors.nombre.message}</p>}
+        {errors.nombre && <p className="text-sm text-error">{errors.nombre.message}</p>}
       </div>
       <div className="space-y-1">
         <Label htmlFor="platillo-categoria">Categoría</Label>
         <Input id="platillo-categoria" {...register('categoria')} />
-        {errors.categoria && <p className="text-sm text-red-600">{errors.categoria.message}</p>}
+        {errors.categoria && <p className="text-sm text-error">{errors.categoria.message}</p>}
       </div>
       <div className="space-y-1 sm:col-span-2">
         <Label htmlFor="platillo-descripcion">Descripción</Label>
         <Input id="platillo-descripcion" {...register('descripcion')} />
         {errors.descripcion && (
-          <p className="text-sm text-red-600">{errors.descripcion.message}</p>
+          <p className="text-sm text-error">{errors.descripcion.message}</p>
         )}
       </div>
       <div className="flex gap-2 sm:col-span-2">
         <Button type="submit" disabled={enviando}>
+          {inicial ? <IconoCheck className="h-4 w-4" /> : <IconoAgregar className="h-4 w-4" />}
           {inicial ? 'Guardar cambios' : 'Crear platillo'}
         </Button>
         {onCancelar && (

@@ -38,6 +38,11 @@ export const menuItemPatchSchema = z
     message: 'No hay campos para actualizar',
   });
 
+export const menuRepublicarSchema = z.object({
+  fecha: fechaSchema.optional(),
+});
+
 export type MenuFiltro = z.infer<typeof menuFiltroSchema>;
 export type MenuItemInput = z.infer<typeof menuItemInputSchema>;
 export type MenuItemPatch = z.infer<typeof menuItemPatchSchema>;
+export type MenuRepublicar = z.infer<typeof menuRepublicarSchema>;

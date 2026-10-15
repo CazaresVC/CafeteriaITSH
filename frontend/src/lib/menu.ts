@@ -42,6 +42,13 @@ export interface MenuItemPatch {
   especial?: boolean;
 }
 
+export interface ResultadoRepublicacion {
+  fecha: string;
+  origen: string;
+  agregados: number;
+  omitidos: number;
+}
+
 export function usePlatillos(activo?: boolean) {
   return useQuery({
     queryKey: ['platillos', activo ?? 'todos'],
@@ -122,6 +129,17 @@ export function useQuitarMenuItem() {
     mutationFn: async (id: number) => {
       await api.delete(`/menu/${id}`);
     },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['menu'] });
+    },
+  });
+}
+
+export function useRepublicarMenu() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (fecha?: string) =>
+      (await api.post<ResultadoRepublicacion>('/menu/republicar', fecha ? { fecha } : {})).data,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['menu'] });
     },

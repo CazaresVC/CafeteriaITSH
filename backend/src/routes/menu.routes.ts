@@ -4,7 +4,11 @@ import { requireAuth } from '../middlewares/requireAuth';
 import { requireRole } from '../middlewares/requireRole';
 import { validate } from '../middlewares/validate';
 import { idParamSchema } from '../utils/schemas';
-import { menuItemInputSchema, menuItemPatchSchema } from '../utils/schemas/menu.schema';
+import {
+  menuItemInputSchema,
+  menuItemPatchSchema,
+  menuRepublicarSchema,
+} from '../utils/schemas/menu.schema';
 
 const router = Router();
 
@@ -15,6 +19,13 @@ router.post(
   requireRole('administrador'),
   validate(menuItemInputSchema),
   menuController.agregar,
+);
+router.post(
+  '/republicar',
+  requireAuth,
+  requireRole('administrador'),
+  validate(menuRepublicarSchema),
+  menuController.republicar,
 );
 router.patch(
   '/:id',

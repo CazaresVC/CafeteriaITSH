@@ -4,6 +4,21 @@ import { ErrorConflicto, ErrorDeDominio } from '../utils/errors';
 
 export const PENDIENTE = 'Pendiente';
 export const PAGADO = 'Pagado';
+export const EN_PREPARACION = 'En preparación';
+export const LISTO = 'Listo';
+export const ENTREGADO = 'Entregado';
+export const CANCELADO = 'Cancelado';
+
+export const ESTADOS_PEDIDO = [
+  PENDIENTE,
+  PAGADO,
+  EN_PREPARACION,
+  LISTO,
+  ENTREGADO,
+  CANCELADO,
+] as const;
+
+export type EstadoNombre = (typeof ESTADOS_PEDIDO)[number];
 
 interface FilaEstado extends RowDataPacket {
   id: number;
@@ -25,11 +40,16 @@ export async function obtenerEstadoId(nombre: string): Promise<number> {
   return fila.id;
 }
 
-export async function validarTransicion(origenId: number, destinoId: number): Promise<void> {
-  const filas = await query<RowDataPacket[]>(
-    'SELECT desde_id FROM transicion_estado WHERE desde_id = ? AND hacia_id = ? LIMIT 1',
-    [origenId, destinoId],
-  );
+export async function validarTransicion(
+  origenId: number,
+  destinoId: number,
+  conn?: PoolConnection,
+): Promise<void> {
+  const sql = 'SELECT desde_id FROM transicion_estado WHERE desde_id = ? AND hacia_id = ? LIMIT 1';
+  const parametros = [origenId, destinoId];
+  const filas = conn
+    ? (await conn.execute<RowDataPacket[]>(sql, parametros))[0]
+    : await query<RowDataPacket[]>(sql, parametros);
   if (filas.length === 0) {
     throw new ErrorConflicto('La transición de estado no está permitida');
   }

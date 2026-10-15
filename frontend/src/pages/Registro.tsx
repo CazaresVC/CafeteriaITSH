@@ -38,23 +38,24 @@ export function Registro() {
   });
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Crear cuenta de cliente</CardTitle>
-          <p className="mt-1 text-sm text-slate-500">Para alumnos y docentes</p>
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <Card className="w-full max-w-md overflow-hidden">
+        <div className="h-1.5 w-full bg-primary" />
+        <CardHeader className="bg-surface-container-low">
+          <CardTitle className="text-xl">Crear cuenta de cliente</CardTitle>
+          <p className="mt-1 text-sm text-on-surface-variant">Para alumnos y docentes</p>
         </CardHeader>
         <CardContent>
           <form className="space-y-4" onSubmit={enviar} noValidate>
             <div className="space-y-1">
               <Label htmlFor="nombre">Nombre</Label>
               <Input id="nombre" autoComplete="name" {...register('nombre')} />
-              {errors.nombre && <p className="text-sm text-red-600">{errors.nombre.message}</p>}
+              {errors.nombre && <p className="text-sm text-error">{errors.nombre.message}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="correo">Correo electrónico</Label>
               <Input id="correo" type="email" autoComplete="username" {...register('correo')} />
-              {errors.correo && <p className="text-sm text-red-600">{errors.correo.message}</p>}
+              {errors.correo && <p className="text-sm text-error">{errors.correo.message}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="password">Contraseña</Label>
@@ -65,11 +66,14 @@ export function Registro() {
                 {...register('password')}
               />
               {errors.password && (
-                <p className="text-sm text-red-600">{errors.password.message}</p>
+                <p className="text-sm text-error">{errors.password.message}</p>
               )}
             </div>
             {error && (
-              <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+              <p
+                className="rounded-md bg-error-container px-3 py-2 text-sm text-on-error-container"
+                role="alert"
+              >
                 {error}
               </p>
             )}
@@ -77,9 +81,9 @@ export function Registro() {
               {isSubmitting ? 'Creando…' : 'Registrarme'}
             </Button>
           </form>
-          <p className="mt-4 text-center text-sm text-slate-600">
+          <p className="mt-4 text-center text-sm text-on-surface-variant">
             ¿Ya tienes cuenta?{' '}
-            <Link className="font-medium text-slate-900 underline" to="/login">
+            <Link className="font-semibold text-primary hover:underline" to="/login">
               Inicia sesión
             </Link>
           </p>

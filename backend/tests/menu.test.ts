@@ -201,3 +201,78 @@ describe('US7 — gestión del menú del día', () => {
     expect(res.status).toBe(403);
   });
 });
+
+describe('US7 — republicar el menú del día', () => {
+  it('copia el menú más reciente al destino omitiendo duplicados (200)', async () => {
+    queryMock
+      .mockResolvedValueOnce([ADMIN])
+      .mockResolvedValueOnce([{ origen: '2026-10-13' }])
+      .mockResolvedValueOnce([{ total: 3 }])
+      .mockResolvedValueOnce({ affectedRows: 2 });
+
+    const res = await request(app)
+      .post('/api/menu/republicar')
+      .set('Cookie', COOKIE(tokenAdmin()))
+      .send({ fecha: '2026-10-14' });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      fecha: '2026-10-14',
+      origen: '2026-10-13',
+      agregados: 2,
+      omitidos: 1,
+    });
+  });
+
+  it('usa la fecha de hoy cuando no se envía destino', async () => {
+    queryMock
+      .mockResolvedValueOnce([ADMIN])
+      .mockResolvedValueOnce([{ origen: '2026-10-13' }])
+      .mockResolvedValueOnce([{ total: 3 }])
+      .mockResolvedValueOnce({ affectedRows: 3 });
+
+    const res = await request(app)
+      .post('/api/menu/republicar')
+      .set('Cookie', COOKIE(tokenAdmin()))
+      .send({});
+
+    expect(res.status).toBe(200);
+    expect(res.body.origen).toBe('2026-10-13');
+    expect(res.body.agregados).toBe(3);
+    expect(res.body.omitidos).toBe(0);
+  });
+
+  it('responde 404 cuando no hay un menú previo', async () => {
+    queryMock.mockResolvedValueOnce([ADMIN]).mockResolvedValueOnce([{ origen: null }]);
+
+    const res = await request(app)
+      .post('/api/menu/republicar')
+      .set('Cookie', COOKIE(tokenAdmin()))
+      .send({ fecha: '2026-10-14' });
+
+    expect(res.status).toBe(404);
+  });
+
+  it('rechaza una fecha inválida (400)', async () => {
+    queryMock.mockResolvedValueOnce([ADMIN]);
+
+    const res = await request(app)
+      .post('/api/menu/republicar')
+      .set('Cookie', COOKIE(tokenAdmin()))
+      .send({ fecha: '14-10-2026' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error.codigo).toBe('DATOS_INVALIDOS');
+  });
+
+  it('prohíbe republicar a un rol no administrador (403)', async () => {
+    queryMock.mockResolvedValueOnce([CLIENTE]);
+
+    const res = await request(app)
+      .post('/api/menu/republicar')
+      .set('Cookie', COOKIE(tokenCliente()))
+      .send({ fecha: '2026-10-14' });
+
+    expect(res.status).toBe(403);
+  });
+});

@@ -13,7 +13,7 @@ export function ProtectedRoute({ children, roles }: Props) {
   const ubicacion = useLocation();
 
   if (cargando) {
-    return <p className="p-8 text-center text-slate-500">Cargando…</p>;
+    return <p className="p-8 text-center text-on-surface-variant">Cargando…</p>;
   }
 
   if (!usuario) {
@@ -22,7 +22,7 @@ export function ProtectedRoute({ children, roles }: Props) {
 
   if (roles && !roles.includes(usuario.rol)) {
     return (
-      <p className="p-8 text-center text-red-600" role="alert">
+      <p className="p-8 text-center text-error" role="alert">
         Acceso denegado
       </p>
     );

@@ -1,4 +1,5 @@
 import type { MenuItem } from '../../lib/menu';
+import { Badge } from '../ui/badge';
 import { cn } from '../../lib/utils';
 
 function formatearPrecio(precio: number): string {
@@ -10,29 +11,27 @@ export function PlatilloCard({ item }: { item: MenuItem }) {
     <li
       aria-disabled={!item.disponible}
       className={cn(
-        'rounded-xl border border-slate-200 bg-white p-4 shadow-sm',
-        !item.disponible && 'opacity-60',
+        'flex flex-col rounded-2xl border bg-white p-4 shadow-sm transition-all',
+        item.disponible
+          ? 'border-outline-variant/70 hover:-translate-y-0.5 hover:border-primary/40'
+          : 'border-outline-variant/50 opacity-60',
       )}
     >
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="font-semibold text-slate-900">{item.nombre}</h3>
-        <span className="shrink-0 font-medium text-slate-900">{formatearPrecio(item.precio)}</span>
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="font-heading text-base font-bold text-on-surface">{item.nombre}</h3>
+        <span className="shrink-0 font-heading text-lg font-extrabold tracking-tight text-primary">
+          {formatearPrecio(item.precio)}
+        </span>
       </div>
-      {item.categoria && (
-        <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">{item.categoria}</p>
+
+      {item.descripcion && (
+        <p className="mt-1.5 text-sm text-on-surface-variant">{item.descripcion}</p>
       )}
-      {item.descripcion && <p className="mt-1 text-sm text-slate-600">{item.descripcion}</p>}
-      <div className="mt-3 flex flex-wrap gap-2">
-        {item.especial && (
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-            Especial
-          </span>
-        )}
-        {!item.disponible && (
-          <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
-            No disponible
-          </span>
-        )}
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {item.categoria && <Badge tono="neutral">{item.categoria}</Badge>}
+        {item.especial && <Badge tono="especial">Especial</Badge>}
+        {!item.disponible && <Badge tono="error">No disponible</Badge>}
       </div>
     </li>
   );

@@ -3,6 +3,8 @@ import { useMenu } from '../../lib/menu';
 import { useCrearPedido, type LineaPedidoInput } from '../../lib/pedidos';
 import { mensajeDeError } from '../../lib/api';
 import { Carrito } from '../../components/clientes/Carrito';
+import { PageHeader } from '../../components/ui/page-header';
+import { IconoCaja } from '../../components/iconos';
 
 export function ArmarPedido() {
   const { data: items, isLoading, isError } = useMenu();
@@ -15,18 +17,17 @@ export function ArmarPedido() {
   }
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold text-slate-900">Arma tu pedido</h1>
-        <p className="text-sm text-slate-500">
-          Elige los platillos disponibles del menú de hoy y confirma tu pedido anticipado.
-        </p>
-      </div>
+    <div className="space-y-5">
+      <PageHeader
+        icono={<IconoCaja className="h-5 w-5" />}
+        titulo="Arma tu pedido"
+        descripcion="Elige los platillos disponibles del menú de hoy y confirma tu pedido anticipado."
+      />
 
-      {isLoading && <p className="text-sm text-slate-500">Cargando menú…</p>}
+      {isLoading && <p className="text-sm text-on-surface-variant">Cargando menú…</p>}
 
       {isError && (
-        <p className="text-sm text-red-600" role="alert">
+        <p className="text-sm text-error" role="alert">
           No se pudo cargar el menú. Inténtalo de nuevo.
         </p>
       )}

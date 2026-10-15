@@ -12,6 +12,9 @@
 -- no se guarda ninguna contraseña en texto plano.
 -- ============================================================
 
+-- Forzar UTF-8 en la sesión para preservar acentos (ver 001).
+SET NAMES utf8mb4;
+
 INSERT IGNORE INTO usuario (nombre, correo, password_hash, rol_id)
 SELECT 'Administrador', 'admin@cafeitsh.local',
        '$2a$10$PGKirS9l0iCUn49qQnJeuOjzWZBAYNokbhl60lisQRl8LnGG3WzMW',

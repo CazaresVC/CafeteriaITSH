@@ -68,6 +68,21 @@ describe('US1 — inicio de sesión', () => {
     expect(res.body.error.codigo).toBe('CREDENCIALES_INVALIDAS');
   });
 
+  it('bloquea temporalmente tras demasiados intentos fallidos', async () => {
+    const correo = 'bloqueo@cafeitsh.local';
+    for (let i = 0; i < 8; i += 1) {
+      queryMock.mockResolvedValueOnce([]);
+      await request(app).post('/api/auth/login').send({ correo, password: 'mala' });
+    }
+    queryMock.mockClear();
+
+    const res = await request(app).post('/api/auth/login').send({ correo, password: 'mala' });
+
+    expect(res.status).toBe(401);
+    expect(res.body.error.codigo).toBe('CREDENCIALES_INVALIDAS');
+    expect(queryMock).not.toHaveBeenCalled();
+  });
+
   it('rechaza datos inválidos con 400', async () => {
     const res = await request(app)
       .post('/api/auth/login')

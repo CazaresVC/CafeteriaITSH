@@ -52,3 +52,13 @@ export const quitar: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+export const republicar: RequestHandler = async (req, res, next) => {
+  try {
+    const fecha = (req.body as { fecha?: string }).fecha ?? hoyISO();
+    const resultado = await menuService.republicar(fecha);
+    res.status(200).json(resultado);
+  } catch (error) {
+    next(error);
+  }
+};

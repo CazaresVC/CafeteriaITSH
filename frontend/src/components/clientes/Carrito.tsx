@@ -2,6 +2,10 @@ import { useState } from 'react';
 import type { MenuItem } from '../../lib/menu';
 import type { LineaPedidoInput } from '../../lib/pedidos';
 import { Button } from '../ui/button';
+import { Stepper } from '../ui/stepper';
+import { Badge } from '../ui/badge';
+import { EmptyState } from '../ui/empty-state';
+import { IconoCheck } from '../iconos';
 
 interface Props {
   items: MenuItem[];
@@ -37,63 +41,55 @@ export function Carrito({ items, onConfirmar, enviando = false, error = null }: 
 
   if (disponibles.length === 0) {
     return (
-      <p className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
-        No hay platillos disponibles para armar un pedido.
-      </p>
+      <EmptyState
+        titulo="No hay platillos disponibles"
+        descripcion="El menú de hoy todavía no tiene platillos activos para armar un pedido."
+      />
     );
   }
 
   return (
     <div className="space-y-4">
-      <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">
+      <ul className="divide-y divide-surface-container-high overflow-hidden rounded-2xl border border-outline-variant/70 bg-white shadow-sm">
         {disponibles.map((item) => {
           const cantidad = cantidades[item.platilloId] ?? 0;
           return (
-            <li key={item.id} className="flex flex-wrap items-center gap-3 p-4">
-              <div className="flex-1">
-                <p className="font-medium text-slate-900">{item.nombre}</p>
-                <p className="text-sm text-slate-500">{formatearPrecio(item.precio)}</p>
+            <li key={item.id} className="flex flex-wrap items-center gap-3 px-4 py-3.5">
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-on-surface">{item.nombre}</p>
+                <div className="mt-1 flex items-center gap-2">
+                  <span className="font-heading text-sm font-bold text-primary">
+                    {formatearPrecio(item.precio)}
+                  </span>
+                  {item.especial && <Badge tono="especial">Especial</Badge>}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  aria-label={`Quitar ${item.nombre}`}
-                  onClick={() => cambiar(item.platilloId, -1)}
-                  disabled={cantidad === 0}
-                  className="h-8 w-8 rounded-md border border-slate-300 text-slate-700 disabled:opacity-40"
-                >
-                  −
-                </button>
-                <span
-                  aria-label={`Cantidad de ${item.nombre}`}
-                  data-testid={`cantidad-${item.platilloId}`}
-                  className="w-8 text-center font-medium text-slate-900"
-                >
-                  {cantidad}
-                </span>
-                <button
-                  type="button"
-                  aria-label={`Agregar ${item.nombre}`}
-                  onClick={() => cambiar(item.platilloId, 1)}
-                  className="h-8 w-8 rounded-md border border-slate-300 text-slate-700"
-                >
-                  +
-                </button>
-              </div>
+              <Stepper
+                cantidad={cantidad}
+                onCambiar={(delta) => cambiar(item.platilloId, delta)}
+                nombre={item.nombre}
+                testid={`cantidad-${item.platilloId}`}
+              />
             </li>
           );
         })}
       </ul>
 
-      <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4">
-        <span className="text-sm font-medium text-slate-600">Total</span>
-        <span data-testid="total" className="text-lg font-semibold text-slate-900">
+      <div className="flex items-center justify-between rounded-xl border border-outline-variant/70 bg-surface-container-low p-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-on-surface-variant">Total</span>
+          <Badge tono="neutral">{lineas.length} platillo(s)</Badge>
+        </div>
+        <span
+          data-testid="total"
+          className="font-heading text-3xl font-extrabold tracking-tight text-primary"
+        >
           {formatearPrecio(total)}
         </span>
       </div>
 
       {error && (
-        <p className="text-sm text-red-600" role="alert">
+        <p className="text-sm text-error" role="alert">
           {error}
         </p>
       )}
@@ -101,8 +97,9 @@ export function Carrito({ items, onConfirmar, enviando = false, error = null }: 
       <Button
         onClick={() => onConfirmar(lineas)}
         disabled={lineas.length === 0 || enviando}
-        className="w-full"
+        className="w-full min-h-12 text-base"
       >
+        <IconoCheck className="h-5 w-5" />
         {enviando ? 'Confirmando…' : 'Confirmar pedido'}
       </Button>
     </div>

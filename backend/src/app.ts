@@ -6,8 +6,13 @@ import usuariosRoutes from './routes/usuarios.routes';
 import platillosRoutes from './routes/platillos.routes';
 import menuRoutes from './routes/menu.routes';
 import pedidosRoutes from './routes/pedidos.routes';
+import notificacionesRoutes from './routes/notificaciones.routes';
+import { onPedidoListo } from './services/eventosPedido';
+import * as notificacionesService from './services/notificaciones.service';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 import { env } from './config/env';
+
+onPedidoListo((evento) => notificacionesService.emitirPedidoListo(evento));
 
 export function crearApp() {
   const app = express();
@@ -25,6 +30,7 @@ export function crearApp() {
   app.use('/api/platillos', platillosRoutes);
   app.use('/api/menu', menuRoutes);
   app.use('/api/pedidos', pedidosRoutes);
+  app.use('/api/notificaciones', notificacionesRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

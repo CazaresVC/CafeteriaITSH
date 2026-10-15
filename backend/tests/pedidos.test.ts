@@ -198,7 +198,7 @@ describe('US1 — crear un pedido anticipado', () => {
     expect(res.body.pago).toBeNull();
   });
 
-  it('prohíbe consultar un pedido ajeno (403)', async () => {
+  it('responde 404 al consultar un pedido ajeno (no revela su existencia)', async () => {
     queryMock
       .mockResolvedValueOnce([CLIENTE])
       .mockResolvedValueOnce([{ ...PEDIDO_HEADER, usuarioId: 99 }]);
@@ -207,7 +207,8 @@ describe('US1 — crear un pedido anticipado', () => {
       .get('/api/pedidos/7')
       .set('Cookie', COOKIE(tokenCliente()));
 
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(404);
+    expect(res.body.error.codigo).toBe('NO_ENCONTRADO');
   });
 
   it('responde 404 al consultar un pedido inexistente', async () => {
