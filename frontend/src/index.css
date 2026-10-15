@@ -1,5 +1,65 @@
 @import 'tailwindcss';
 
+@theme {
+  /* Superficies — Docs/DESIGN.md */
+  --color-surface: #f6f1e9;
+  --color-surface-dim: #e4ddd2;
+  --color-surface-bright: #fbf8f3;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #fbf8f3;
+  --color-surface-container: #f1ece3;
+  --color-surface-container-high: #eae4da;
+  --color-surface-container-highest: #e4ddd2;
+  --color-on-surface: #1c1917;
+  --color-on-surface-variant: #44403c;
+  --color-outline: #78716c;
+  --color-outline-variant: #d6d0c5;
+
+  /* Marca */
+  --color-primary: #1e7a46;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #ccebd9;
+  --color-on-primary-container: #0b3d22;
+  --color-secondary: #8a6a4f;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #f3e7da;
+  --color-on-secondary-container: #3d2a17;
+  --color-tertiary: #6b3f23;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #f2e1d0;
+  --color-on-tertiary-container: #2c1608;
+
+  /* Error */
+  --color-error: #b91c1c;
+  --color-on-error: #ffffff;
+  --color-error-container: #fee2e2;
+  --color-on-error-container: #7f1d1d;
+
+  --color-background: #f6f1e9;
+  --color-on-background: #1c1917;
+
+  /* Estados de pedido */
+  --color-status-pending: #9a3412;
+  --color-status-paid: #1e7a46;
+  --color-status-preparing: #b45309;
+  --color-status-ready: #0369a1;
+  --color-status-delivered: #166534;
+  --color-status-cancelled: #b91c1c;
+
+  /* Tipografía */
+  --font-heading:
+    'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* Radios */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+}
+
 :root {
   color-scheme: light;
 }
@@ -7,7 +67,26 @@
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  background-color: #f8fafc;
-  color: #0f172a;
+  font-family: var(--font-body);
+  background-color: var(--color-surface);
+  background-image:
+    radial-gradient(circle at 0% 0%, rgba(30, 122, 70, 0.07), transparent 38%),
+    radial-gradient(circle at 100% 100%, rgba(107, 63, 35, 0.06), transparent 42%);
+  background-attachment: fixed;
+  color: var(--color-on-surface);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+::selection {
+  background-color: var(--color-primary-container);
+  color: var(--color-on-primary-container);
 }

@@ -4,10 +4,12 @@ import { cn } from '../../lib/utils';
 type Variante = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 const VARIANTES: Record<Variante, string> = {
-  primary: 'bg-slate-900 text-white hover:bg-slate-700',
-  secondary: 'bg-slate-100 text-slate-900 hover:bg-slate-200',
-  ghost: 'bg-transparent text-slate-700 hover:bg-slate-100',
-  danger: 'bg-red-600 text-white hover:bg-red-500',
+  primary:
+    'bg-primary text-on-primary shadow-sm hover:bg-primary/90 active:bg-primary/95',
+  secondary:
+    'border border-primary/30 bg-white text-primary hover:border-primary/50 hover:bg-primary-container/50',
+  ghost: 'bg-transparent text-on-surface-variant hover:bg-surface-container',
+  danger: 'bg-error text-on-error shadow-sm hover:bg-error/90',
 };
 
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -23,9 +25,9 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
       ref={ref}
       type={type}
       className={cn(
-        'inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400',
-        'disabled:cursor-not-allowed disabled:opacity-60',
+        'inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition-all',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1 focus-visible:ring-offset-surface',
+        'disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none',
         VARIANTES[variante],
         className,
       )}
