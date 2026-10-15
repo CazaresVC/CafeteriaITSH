@@ -31,9 +31,9 @@ prueba independientes.
 
 **Purpose**: Confirmar la infraestructura del Sprint 1 reutilizada por esta feature
 
-- [ ] T001 Verificar la estructura existente en `backend/src/{config,db,middlewares,routes,controllers,services,utils}` y `frontend/src/{lib,components/ui,pages/{caja,cocina}}` y los scripts (`dev`, `test`, `typecheck`, `migrate`) según plan.md
-- [ ] T002 [P] Confirmar dependencias existentes (`express`, `mysql2`, `zod`, `jsonwebtoken`, `@tanstack/react-query`, `axios`, Tailwind, shadcn/ui) en `backend/package.json` y `frontend/package.json`; no agregar dependencias nuevas (constitución §8/§20)
-- [ ] T003 [P] Revisar `database/migrations/001_crear_esquema.sql` y `002_seed_inicial.sql` y confirmar tablas (`pedido`, `pedido_detalle`, `pago`, `estado_pedido`, `transicion_estado`, `pedido_estado_historial`) y transiciones sembradas
+- [x] T001 Verificar la estructura existente en `backend/src/{config,db,middlewares,routes,controllers,services,utils}` y `frontend/src/{lib,components/ui,pages/{caja,cocina}}` y los scripts (`dev`, `test`, `typecheck`, `migrate`) según plan.md
+- [x] T002 [P] Confirmar dependencias existentes (`express`, `mysql2`, `zod`, `jsonwebtoken`, `@tanstack/react-query`, `axios`, Tailwind, shadcn/ui) en `backend/package.json` y `frontend/package.json`; no agregar dependencias nuevas (constitución §8/§20)
+- [x] T003 [P] Revisar `database/migrations/001_crear_esquema.sql` y `002_seed_inicial.sql` y confirmar tablas (`pedido`, `pedido_detalle`, `pago`, `estado_pedido`, `transicion_estado`, `pedido_estado_historial`) y transiciones sembradas
 
 ---
 
@@ -43,10 +43,10 @@ prueba independientes.
 
 **⚠️ CRITICAL**: Ninguna historia puede comenzar hasta terminar esta fase
 
-- [ ] T004 [P] Implementar generación de folio en `backend/src/utils/numero.ts` (número de pedido único para `pedido.numero`)
-- [ ] T005 [P] Implementar esquemas zod de entrada en `backend/src/utils/schemas/pedidos.schema.ts` (`CrearMostradorInput`, `CobroInput`, `CambioEstadoInput`)
-- [ ] T006 Implementar la máquina de estados en `backend/src/services/estado.service.ts`: `validarTransicion(estadoActualId, estadoNuevoId)` consultando `transicion_estado`, y `registrarCambio(conn, pedidoId, desdeId, haciaId, usuarioId)` que actualiza `pedido.estado_id` e inserta en `pedido_estado_historial` dentro de una transacción
-- [ ] T007 [P] Implementar hooks de TanStack Query en `frontend/src/lib/pedidos.ts` (`usePedidos` con `refetchInterval: 5000`, `usePedido`, mutaciones de crear/cobrar/cambiar estado que invalidan la query)
+- [x] T004 [P] Implementar generación de folio en `backend/src/utils/numero.ts` (número de pedido único para `pedido.numero`)
+- [x] T005 [P] Implementar esquemas zod de entrada en `backend/src/utils/schemas/pedidos.schema.ts` (`CrearMostradorInput`, `CobroInput`, `CambioEstadoInput`)
+- [x] T006 Implementar la máquina de estados en `backend/src/services/estado.service.ts`: `validarTransicion(estadoActualId, estadoNuevoId)` consultando `transicion_estado`, y `registrarCambio(conn, pedidoId, desdeId, haciaId, usuarioId)` que actualiza `pedido.estado_id` e inserta en `pedido_estado_historial` dentro de una transacción
+- [x] T007 [P] Implementar hooks de TanStack Query en `frontend/src/lib/pedidos.ts` (`usePedidos` con `refetchInterval: 5000`, `usePedido`, mutaciones de crear/cobrar/cambiar estado que invalidan la query)
 
 **Checkpoint**: Infraestructura lista — las historias pueden comenzar
 
@@ -64,17 +64,17 @@ entra a la misma cola de preparación que los anticipados.
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T008 [P] [US1] Test de integración de creación y cobro de mostrador en `backend/tests/mostrador.test.ts` (201 con total correcto, `tipo='mostrador'`, `creado_por`=cajero; cobro 200 → `Pagado`; doble cobro 409; sin rol `cajero` 403)
-- [ ] T009 [P] [US1] Test unitario del cálculo del total y validación de ítems (`cantidad > 0`, `menu_dia` no disponible rechazado) en `backend/tests/unit/totales.test.ts`
+- [x] T008 [P] [US1] Test de integración de creación y cobro de mostrador en `backend/tests/mostrador.test.ts` (201 con total correcto, `tipo='mostrador'`, `creado_por`=cajero; cobro 200 → `Pagado`; doble cobro 409; sin rol `cajero` 403)
+- [x] T009 [P] [US1] Test unitario del cálculo del total y validación de ítems (`cantidad > 0`, `menu_dia` no disponible rechazado) en `backend/tests/unit/totales.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T010 [P] [US1] Implementar `crearMostrador` en `backend/src/services/pedidos.service.ts` (inserta `pedido` + `pedido_detalle` en una transacción; `usuario_id`/`fecha_recoleccion` nulos; total desde `menu_dia.precio`)
-- [ ] T011 [P] [US1] Implementar `registrarCobro` en `backend/src/services/pago.service.ts` (inserta `pago` con `metodo='efectivo'`, `monto = total`, `registrado_por`=cajero y usa `estado.service` para `Pendiente → Pagado`)
-- [ ] T012 [US1] Implementar `backend/src/controllers/pedidos.controller.ts` y `backend/src/routes/pedidos.routes.ts` (`POST /pedidos/mostrador`, `POST /pedidos/{id}/cobro` con `requireRole('cajero')`); montar las rutas en `backend/src/app.ts`
-- [ ] T013 [US1] Implementar `frontend/src/components/caja/PedidoMostrador.tsx` (selección de platillos del menú, cantidades, total y `cliente_nombre` opcional) con react-hook-form + zod
-- [ ] T014 [P] [US1] Implementar `frontend/src/components/BotonEstado.tsx` (botón reutilizable de alto contraste con área táctil ≥ 44 px)
-- [ ] T015 [US1] Implementar captura y cobro en `frontend/src/pages/caja/Caja.tsx` usando `frontend/src/lib/pedidos.ts`
+- [x] T010 [P] [US1] Implementar `crearMostrador` en `backend/src/services/pedidos.service.ts` (inserta `pedido` + `pedido_detalle` en una transacción; `usuario_id`/`fecha_recoleccion` nulos; total desde `menu_dia.precio`)
+- [x] T011 [P] [US1] Implementar `registrarCobro` en `backend/src/services/pago.service.ts` (inserta `pago` con `metodo='efectivo'`, `monto = total`, `registrado_por`=cajero y usa `estado.service` para `Pendiente → Pagado`)
+- [x] T012 [US1] Implementar `backend/src/controllers/pedidos.controller.ts` y `backend/src/routes/pedidos.routes.ts` (`POST /pedidos/mostrador`, `POST /pedidos/{id}/cobro` con `requireRole('cajero')`); montar las rutas en `backend/src/app.ts`
+- [x] T013 [US1] Implementar `frontend/src/components/caja/PedidoMostrador.tsx` (selección de platillos del menú, cantidades, total y `cliente_nombre` opcional) con react-hook-form + zod
+- [x] T014 [P] [US1] Implementar `frontend/src/components/BotonEstado.tsx` (botón reutilizable de alto contraste con área táctil ≥ 44 px)
+- [x] T015 [US1] Implementar captura y cobro en `frontend/src/pages/caja/Caja.tsx` usando `frontend/src/lib/pedidos.ts`
 
 **Checkpoint**: US1 funcional y verificable de forma independiente
 
@@ -91,16 +91,16 @@ puede mover un pedido a `En preparación` y luego a `Listo`.
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T016 [P] [US2] Test de integración de `GET /pedidos?estado=&origen=` en `backend/tests/cocina.test.ts` (mezcla ambos orígenes, orden por `creado_en`, filtros por estado y origen)
-- [ ] T017 [P] [US2] Test de integración de `PATCH /pedidos/{id}/estado` en `backend/tests/cocina.test.ts` (`Pagado → En preparación`, `En preparación → Listo`, y rechazo 409 de salto `Pagado → Listo`)
+- [x] T016 [P] [US2] Test de integración de `GET /pedidos?estado=&origen=` en `backend/tests/cocina.test.ts` (mezcla ambos orígenes, orden por `creado_en`, filtros por estado y origen)
+- [x] T017 [P] [US2] Test de integración de `PATCH /pedidos/{id}/estado` en `backend/tests/cocina.test.ts` (`Pagado → En preparación`, `En preparación → Listo`, y rechazo 409 de salto `Pagado → Listo`)
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Implementar `listarPedidos` en `backend/src/services/pedidos.service.ts` (filtros `estado`/`origen`; orden `creado_en ASC, id ASC`; incluye líneas de detalle para la KDS)
-- [ ] T019 [US2] Implementar `obtenerPedido` en `backend/src/services/pedidos.service.ts` (detalle + `pedido_estado_historial`)
-- [ ] T020 [US2] Implementar `cambiarEstado` en `backend/src/services/pedidos.service.ts` (lee el pedido con `SELECT ... FOR UPDATE`, valida con `estado.service` y registra el cambio); exponer `GET /pedidos`, `GET /pedidos/{id}` y `PATCH /pedidos/{id}/estado` con `requireRole('cajero', 'cocinero')` en `pedidos.controller.ts` y `pedidos.routes.ts`
-- [ ] T021 [US2] Implementar `frontend/src/components/cocina/PedidoCard.tsx` (folio, origen, productos y cantidades, tiempo de espera, acciones de estado)
-- [ ] T022 [US2] Implementar la KDS en `frontend/src/pages/cocina/Cocina.tsx` con `usePedidos` (polling) y acciones `En preparación`/`Listo`
+- [x] T018 [US2] Implementar `listarPedidos` en `backend/src/services/pedidos.service.ts` (filtros `estado`/`origen`; orden `creado_en ASC, id ASC`; incluye líneas de detalle para la KDS)
+- [x] T019 [US2] Implementar `obtenerPedido` en `backend/src/services/pedidos.service.ts` (detalle + `pedido_estado_historial`)
+- [x] T020 [US2] Implementar `cambiarEstado` en `backend/src/services/pedidos.service.ts` (lee el pedido con `SELECT ... FOR UPDATE`, valida con `estado.service` y registra el cambio); exponer `GET /pedidos`, `GET /pedidos/{id}` y `PATCH /pedidos/{id}/estado` con `requireRole('cajero', 'cocinero')` en `pedidos.controller.ts` y `pedidos.routes.ts`
+- [x] T021 [US2] Implementar `frontend/src/components/cocina/PedidoCard.tsx` (folio, origen, productos y cantidades, tiempo de espera, acciones de estado)
+- [x] T022 [US2] Implementar la KDS en `frontend/src/pages/cocina/Cocina.tsx` con `usePedidos` (polling) y acciones `En preparación`/`Listo`
 
 **Checkpoint**: US1 y US2 funcionan de forma independiente
 
@@ -117,13 +117,13 @@ previo puede cancelarse; las transiciones inválidas se rechazan.
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T023 [P] [US3] Test de integración de entrega y cancelación en `backend/tests/transiciones.test.ts` (`Listo → Entregado`; `Pagado → Cancelado` y `En preparación → Cancelado`; rechazo 409 de cambios sobre `Entregado`/`Cancelado` y de saltos)
+- [x] T023 [P] [US3] Test de integración de entrega y cancelación en `backend/tests/transiciones.test.ts` (`Listo → Entregado`; `Pagado → Cancelado` y `En preparación → Cancelado`; rechazo 409 de cambios sobre `Entregado`/`Cancelado` y de saltos)
 
 ### Implementation for User Story 3
 
-- [ ] T024 [US3] Extender `cambiarEstado` en `backend/src/services/pedidos.service.ts` para aceptar `Entregado` y `Cancelado` (la validez ya proviene de `transicion_estado`; `Entregado`/`Cancelado` quedan sin transiciones de salida)
-- [ ] T025 [US3] Añadir acciones de `Entregado` y `Cancelado` (con confirmación) en `frontend/src/components/cocina/PedidoCard.tsx` y `frontend/src/pages/caja/Caja.tsx`
-- [ ] T026 [US3] Mostrar los estados terminales como no accionables en `PedidoCard.tsx` (sin botones de transición) y mensajes claros de error `409` en el frontend
+- [x] T024 [US3] Extender `cambiarEstado` en `backend/src/services/pedidos.service.ts` para aceptar `Entregado` y `Cancelado` (la validez ya proviene de `transicion_estado`; `Entregado`/`Cancelado` quedan sin transiciones de salida)
+- [x] T025 [US3] Añadir acciones de `Entregado` y `Cancelado` (con confirmación) en `frontend/src/components/cocina/PedidoCard.tsx` y `frontend/src/pages/caja/Caja.tsx`
+- [x] T026 [US3] Mostrar los estados terminales como no accionables en `PedidoCard.tsx` (sin botones de transición) y mensajes claros de error `409` en el frontend
 
 **Checkpoint**: Todas las historias funcionan de forma independiente
 
@@ -133,12 +133,12 @@ previo puede cancelarse; las transiciones inválidas se rechazan.
 
 **Purpose**: Mejoras que afectan a varias historias
 
-- [ ] T027 [P] Documentar los endpoints de pedidos y el flujo de estados en `backend/README.md`
-- [ ] T028 [P] Añadir test de concurrencia (dos actualizaciones sobre el mismo pedido → una gana, otra 409) en `backend/tests/transiciones.test.ts`
-- [ ] T029 [P] Añadir test de componente en `frontend/tests/Cocina.test.tsx` (render y refresco vía polling con TanStack Query) y `frontend/tests/Caja.test.tsx` (captura y cobro)
-- [ ] T030 Verificar accesibilidad de caja y cocina: área táctil ≥ 44 px y alto contraste (constitución §19) en `frontend/src/components/BotonEstado.tsx`
-- [ ] T031 Verificar `npm run typecheck` y `npm test` en verde en `backend` y `frontend`
-- [ ] T032 Ejecutar los escenarios de `quickstart.md` y registrar resultados para la demo del sprint
+- [x] T027 [P] Documentar los endpoints de pedidos y el flujo de estados en `backend/README.md`
+- [x] T028 [P] Añadir test de concurrencia (dos actualizaciones sobre el mismo pedido → una gana, otra 409) en `backend/tests/transiciones.test.ts`
+- [x] T029 [P] Añadir test de componente en `frontend/tests/Cocina.test.tsx` (render y refresco vía polling con TanStack Query) y `frontend/tests/Caja.test.tsx` (captura y cobro)
+- [x] T030 Verificar accesibilidad de caja y cocina: área táctil ≥ 44 px y alto contraste (constitución §19) en `frontend/src/components/BotonEstado.tsx`
+- [x] T031 Verificar `npm run typecheck` y `npm test` en verde en `backend` y `frontend`
+- [x] T032 Ejecutar los escenarios de `quickstart.md` y registrar resultados para la demo del sprint
 
 ---
 
@@ -221,3 +221,5 @@ Con varias personas:
 - Etiqueta [Story] para trazabilidad con `spec.md` (US1/US2/US3) y con la spec maestra 001 (FR-019…FR-025, FR-031…FR-035)
 - El refresco en vivo usa polling de TanStack Query (5 s); no se incorporan WebSocket/SSE
 - Commit tras cada tarea o grupo lógico; no versionar `.env`
+- T013 se implementó con estado local de React (sin `react-hook-form`), respetando §8 (no
+  agregar dependencias); la validación de entrada se refuerza en el servidor con zod.

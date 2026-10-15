@@ -131,14 +131,17 @@ components:
         tipo: { $ref: '#/components/schemas/TipoPedido' }
         estado: { $ref: '#/components/schemas/EstadoPedido' }
         total: { type: number, format: double, minimum: 0 }
-        fecha_recoleccion: { type: string, format: date-time, nullable: true }
-        creado_en: { type: string, format: date-time }
+        clienteNombre: { type: string, nullable: true }
+        fechaRecoleccion: { type: string, format: date-time, nullable: true }
+        creadoEn: { type: string, format: date-time }
     DetalleLinea:
       type: object
       properties:
-        platillo: { type: string }
+        id: { type: integer }
+        platilloId: { type: integer }
+        nombre: { type: string }
         cantidad: { type: integer, minimum: 1 }
-        precio_unitario: { type: number, format: double, minimum: 0 }
+        precioUnitario: { type: number, format: double, minimum: 0 }
         subtotal: { type: number, format: double, minimum: 0 }
     PedidoDetalle:
       allOf:
@@ -153,14 +156,14 @@ components:
       type: object
       properties:
         id: { type: integer }
-        pedido_id: { type: integer }
+        pedidoId: { type: integer }
         numero: { type: string, description: Folio del pedido asociado }
         tipo: { type: string, example: pedido_listo }
         canal: { type: string, enum: [correo, push, sms] }
-        estado_envio: { type: string, enum: [pendiente, enviada, fallida] }
+        estadoEnvio: { type: string, enum: [pendiente, enviada, fallida] }
         fecha: { type: string, format: date-time }
         vista: { type: boolean }
-        detalle_error: { type: string, nullable: true }
+        detalleError: { type: string, nullable: true }
     Error:
       type: object
       properties:

@@ -1,0 +1,110 @@
+openapi: 3.0.3
+info:
+  title: Cafetería ITSH — Republicar el menú del día
+  version: 1.0.0
+  description: >-
+    Contrato del endpoint de republicación del menú del día. La operación copia el menú de la
+    fecha publicada más reciente a la fecha destino (por defecto, la fecha actual), omitiendo
+    platillos inactivos y duplicados. La sesión se transporta en una cookie httpOnly (`token`) y
+    la operación está reservada al rol `administrador`. Los errores usan el sobre uniforme
+    `{ error: { codigo, mensaje } }`.
+servers:
+  - url: /api
+paths:
+  /menu/republicar:
+    post:
+      summary: Copiar el menú más reciente a la fecha destino (solo administrador)
+      description: >-
+        Copia a la fecha destino los ítems del menú de la fecha publicada más reciente distinta
+        del destino, conservando precio, disponibilidad y la marca de especial. Omite platillos
+        inactivos y los que ya existan en el destino (idempotente).
+      tags: [Menú]
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fecha:
+                  type: string
+                  format: date
+                  description: Fecha destino (`YYYY-MM-DD`). Si se omite, se usa la fecha actual.
+                  example: '2026-10-14'
+      responses:
+        '200':
+          description: Resultado de la republicación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultadoRepublicacion'
+        '400':
+          description: Fecha destino con formato inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: No existe un menú previo para republicar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+  schemas:
+    ResultadoRepublicacion:
+      type: object
+      required: [fecha, origen, agregados, omitidos]
+      properties:
+        fecha:
+          type: string
+          format: date
+          description: Fecha destino a la que se copió el menú
+          example: '2026-10-14'
+        origen:
+          type: string
+          format: date
+          description: Fecha del menú más reciente usado como origen
+          example: '2026-10-13'
+        agregados:
+          type: integer
+          minimum: 0
+          description: Número de ítems nuevos agregados al destino
+          example: 8
+        omitidos:
+          type: integer
+          minimum: 0
+          description: Número de ítems del origen omitidos por ya existir en el destino
+          example: 0
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            codigo: { type: string }
+            mensaje: { type: string }
+  responses:
+    Unauthorized:
+      description: Sesión ausente o inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: El rol del usuario no permite la operación
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

@@ -101,13 +101,13 @@ paths:
             $ref: '#/components/schemas/Origen'
       responses:
         '200':
-          description: Lista de pedidos ordenada por llegada
+          description: Lista de pedidos ordenada por llegada, con sus líneas de detalle
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PedidoResumen'
+                  $ref: '#/components/schemas/Pedido'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -120,7 +120,9 @@ paths:
       tags: [Pedidos]
       responses:
         '200':
-          description: Pedido con líneas de detalle e historial de estados
+          description: >-
+            Pedido con líneas de detalle; el personal (cajero/cocinero) recibe además el
+            historial de estados.
           content:
             application/json:
               schema:
@@ -221,40 +223,51 @@ components:
       properties:
         id: { type: integer }
         numero: { type: string }
-        origen: { $ref: '#/components/schemas/Origen' }
+        tipo: { $ref: '#/components/schemas/Origen' }
         estado: { $ref: '#/components/schemas/EstadoNombre' }
-        cliente_nombre: { type: string, nullable: true }
-        fecha_recoleccion: { type: string, format: date-time, nullable: true }
+        clienteNombre: { type: string, nullable: true }
+        fechaRecoleccion: { type: string, nullable: true }
         total: { type: number, format: decimal }
-        creado_en: { type: string, format: date-time }
+        creadoEn: { type: string, format: date-time }
     Pedido:
       allOf:
         - $ref: '#/components/schemas/PedidoResumen'
         - type: object
           properties:
-            detalle:
+            lineas:
               type: array
               items:
-                $ref: '#/components/schemas/PedidoDetalle'
+                $ref: '#/components/schemas/LineaPedido'
+            pago:
+              nullable: true
+              allOf:
+                - $ref: '#/components/schemas/Pago'
             historial:
               type: array
               items:
                 $ref: '#/components/schemas/HistorialEstado'
-    PedidoDetalle:
+    LineaPedido:
       type: object
       properties:
         id: { type: integer }
-        menu_dia_id: { type: integer }
-        platillo: { type: string }
+        platilloId: { type: integer }
+        nombre: { type: string }
         cantidad: { type: integer }
-        precio_unitario: { type: number, format: decimal }
+        precioUnitario: { type: number, format: decimal }
         subtotal: { type: number, format: decimal }
+    Pago:
+      type: object
+      properties:
+        id: { type: integer }
+        metodo: { type: string, enum: [online, efectivo] }
+        monto: { type: number, format: decimal }
+        referencia: { type: string, nullable: true }
     HistorialEstado:
       type: object
       properties:
-        estado_anterior: { $ref: '#/components/schemas/EstadoNombre' }
-        estado_nuevo: { $ref: '#/components/schemas/EstadoNombre' }
-        cambiado_por: { type: integer, nullable: true }
+        estadoAnterior: { $ref: '#/components/schemas/EstadoNombre' }
+        estadoNuevo: { $ref: '#/components/schemas/EstadoNombre' }
+        cambiadoPor: { type: integer, nullable: true }
         fecha: { type: string, format: date-time }
     Error:
       type: object
