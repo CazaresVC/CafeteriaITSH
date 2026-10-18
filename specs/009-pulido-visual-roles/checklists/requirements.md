@@ -1,36 +1,36 @@
-# Specification Quality Checklist: Pulido visual por rol
+# Checklist de Calidad del Spec: Pulido visual por rol
 
-**Purpose**: Validate specification completeness and quality before proceeding to planning
-**Created**: 2026-10-14
-**Feature**: [spec.md](../spec.md)
+**Propósito**: Validar la completitud y calidad de la especificación antes de continuar con la planificación
+**Creado**: 2026-10-14
+**Funcionalidad**: [spec.md](../spec.md)
 
-## Content Quality
+## Calidad del contenido
 
-- [x] No implementation details (languages, frameworks, APIs)
-- [x] Focused on user value and business needs
-- [x] Written for non-technical stakeholders
-- [x] All mandatory sections completed
+- [x] Sin detalles de implementación (lenguajes, frameworks, APIs)
+- [x] Enfocado en el valor para el usuario y las necesidades del negocio
+- [x] Redactado para interesados no técnicos
+- [x] Todas las secciones obligatorias completadas
 
-## Requirement Completeness
+## Completitud de requisitos
 
-- [x] No [NEEDS CLARIFICATION] markers remain
-- [x] Requirements are testable and unambiguous
-- [x] Success criteria are measurable
-- [x] Success criteria are technology-agnostic (no implementation details)
-- [x] All acceptance scenarios are defined
-- [x] Edge cases are identified
-- [x] Scope is clearly bounded
-- [x] Dependencies and assumptions identified
+- [x] Sin marcadores de [NECESITA ACLARACIÓN] pendientes
+- [x] Requisitos comprobables y sin ambigüedades
+- [x] Criterios de éxito medibles
+- [x] Criterios de éxito independientes de la tecnología (sin detalles de implementación)
+- [x] Todos los escenarios de aceptación definidos
+- [x] Casos límite identificados
+- [x] Alcance claramente delimitado
+- [x] Dependencias y supuestos identificados
 
-## Feature Readiness
+## Preparación de la funcionalidad
 
-- [x] All functional requirements have clear acceptance criteria
-- [x] User scenarios cover primary flows
-- [x] Feature meets measurable outcomes defined in Success Criteria
-- [x] No implementation details leak into specification
+- [x] Todos los requisitos funcionales tienen criterios de aceptación claros
+- [x] Los escenarios de usuario cubren los flujos principales
+- [x] La funcionalidad cumple los resultados medibles definidos en los Criterios de Éxito
+- [x] Sin detalles de implementación filtrados en la especificación
 
-## Notes
+## Notas
 
-- No se rediseña la navegación (tabs) ni el conjunto de pantallas; solo lo visual y dos mejoras de
-  rol con endpoints existentes.
+- No se rediseña la navegación (tabs) ni el conjunto de pantallas; solo lo visual y dos mejoras de rol con endpoints existentes.
 - El backend y `database/` quedan intactos; nada que requiera backend entra en el alcance.
+
