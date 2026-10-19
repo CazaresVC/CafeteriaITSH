@@ -186,3 +186,5 @@ puede).
   (hash señuelo para tiempo constante cuando el correo no existe, bloqueo temporal de 8 intentos
   en ventana de 5 min, retardo de 300 ms en fallo fuera de `NODE_ENV=test`); prueba de bloqueo
   cubierta en `backend/tests/auth.test.ts`.
+- T033: demo del sprint registrada (resultados en quickstart.md).
+  
