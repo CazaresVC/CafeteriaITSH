@@ -51,7 +51,7 @@ export function EmptyState({ titulo, descripcion, children, className }: Props) 
   return (
     <div
       className={cn(
-        'flex flex-col items-center gap-3 rounded-2xl border border-dashed border-outline-variant bg-surface-container-low/60 px-6 py-10 text-center',
+        'flex flex-col items-center gap-3 rounded-xl border border-dashed border-outline-variant bg-surface-container-low/60 px-6 py-10 text-center',
         className,
       )}
     >

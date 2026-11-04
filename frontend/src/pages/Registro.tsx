@@ -49,13 +49,34 @@ export function Registro() {
           <form className="space-y-4" onSubmit={enviar} noValidate>
             <div className="space-y-1">
               <Label htmlFor="nombre">Nombre</Label>
-              <Input id="nombre" autoComplete="name" {...register('nombre')} />
-              {errors.nombre && <p className="text-sm text-error">{errors.nombre.message}</p>}
+              <Input
+                id="nombre"
+                autoComplete="name"
+                aria-invalid={errors.nombre ? true : undefined}
+                aria-describedby={errors.nombre ? 'nombre-error' : undefined}
+                {...register('nombre')}
+              />
+              {errors.nombre && (
+                <p id="nombre-error" className="text-sm text-error" role="alert">
+                  {errors.nombre.message}
+                </p>
+              )}
             </div>
             <div className="space-y-1">
               <Label htmlFor="correo">Correo electrónico</Label>
-              <Input id="correo" type="email" autoComplete="username" {...register('correo')} />
-              {errors.correo && <p className="text-sm text-error">{errors.correo.message}</p>}
+              <Input
+                id="correo"
+                type="email"
+                autoComplete="username"
+                aria-invalid={errors.correo ? true : undefined}
+                aria-describedby={errors.correo ? 'correo-error' : undefined}
+                {...register('correo')}
+              />
+              {errors.correo && (
+                <p id="correo-error" className="text-sm text-error" role="alert">
+                  {errors.correo.message}
+                </p>
+              )}
             </div>
             <div className="space-y-1">
               <Label htmlFor="password">Contraseña</Label>
@@ -63,10 +84,17 @@ export function Registro() {
                 id="password"
                 type="password"
                 autoComplete="new-password"
+                aria-invalid={errors.password ? true : undefined}
+                aria-describedby={errors.password ? 'password-hint password-error' : 'password-hint'}
                 {...register('password')}
               />
+              <p id="password-hint" className="text-xs text-on-surface-variant">
+                Mínimo 8 caracteres.
+              </p>
               {errors.password && (
-                <p className="text-sm text-error">{errors.password.message}</p>
+                <p id="password-error" className="text-sm text-error" role="alert">
+                  {errors.password.message}
+                </p>
               )}
             </div>
             {error && (
@@ -83,7 +111,10 @@ export function Registro() {
           </form>
           <p className="mt-4 text-center text-sm text-on-surface-variant">
             ¿Ya tienes cuenta?{' '}
-            <Link className="font-semibold text-primary hover:underline" to="/login">
+            <Link
+              className="rounded-sm font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+              to="/login"
+            >
               Inicia sesión
             </Link>
           </p>

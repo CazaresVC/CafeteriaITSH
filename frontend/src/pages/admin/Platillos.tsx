@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   useCrearPlatillo,
   useDesactivarPlatillo,
@@ -13,8 +13,17 @@ import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { EmptyState } from '../../components/ui/empty-state';
 import { PageHeader } from '../../components/ui/page-header';
+import { Buscador } from '../../components/ui/buscador';
+import { ChipsCategoria } from '../../components/ui/chips-categoria';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { IconoDesactivar, IconoEditar, IconoPlatillos } from '../../components/iconos';
+
+function normalizar(texto: string): string {
+  return texto
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
 
 export function Platillos() {
   const { data: platillos, isLoading } = usePlatillos();
@@ -25,8 +34,36 @@ export function Platillos() {
   const [editando, setEditando] = useState<Platillo | null>(null);
   const [version, setVersion] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [busqueda, setBusqueda] = useState('');
+  const [categoria, setCategoria] = useState<string | null>(null);
 
   const enviando = crear.isPending || editar.isPending;
+
+  const categorias = useMemo(() => {
+    const unicas = new Set<string>();
+    for (const platillo of platillos ?? []) {
+      if (platillo.categoria) {
+        unicas.add(platillo.categoria);
+      }
+    }
+    return [...unicas].sort((a, b) => a.localeCompare(b, 'es'));
+  }, [platillos]);
+
+  const filtrados = useMemo(() => {
+    const termino = normalizar(busqueda.trim());
+    return (platillos ?? []).filter((platillo) => {
+      if (categoria !== null && platillo.categoria !== categoria) {
+        return false;
+      }
+      if (!termino) {
+        return true;
+      }
+      return (
+        normalizar(platillo.nombre).includes(termino) ||
+        normalizar(platillo.descripcion ?? '').includes(termino)
+      );
+    });
+  }, [busqueda, categoria, platillos]);
 
   function guardar(datos: PlatilloInput) {
     setError(null);
@@ -80,30 +117,60 @@ export function Platillos() {
         <CardHeader>
           <CardTitle>Platillos</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            <Buscador
+              etiqueta="Buscar platillo"
+              value={busqueda}
+              onChange={(evento) => setBusqueda(evento.target.value)}
+            />
+            <ChipsCategoria
+              categorias={categorias}
+              seleccionada={categoria}
+              onSeleccionar={setCategoria}
+            />
+          </div>
+
           {isLoading ? (
-            <p className="text-sm text-on-surface-variant">Cargando…</p>
+            <p className="text-sm text-on-surface-variant" role="status">
+              Cargando…
+            </p>
           ) : !platillos || platillos.length === 0 ? (
             <EmptyState
               titulo="El catálogo está vacío"
               descripcion="Agrega tu primer platillo con el formulario de arriba."
             />
+          ) : filtrados.length === 0 ? (
+            <EmptyState
+              titulo="Sin resultados"
+              descripcion={`No hay platillos que coincidan con “${busqueda || categoria}”.`}
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
+                <caption className="sr-only">Catálogo de platillos registrados</caption>
                 <thead>
                   <tr className="text-xs uppercase tracking-wide text-on-surface-variant">
-                    <th className="rounded-l-lg bg-surface-container px-4 py-3 font-semibold">
+                    <th scope="col" className="rounded-l-lg bg-surface-container px-4 py-3 font-semibold">
                       Nombre
                     </th>
-                    <th className="bg-surface-container px-4 py-3 font-semibold">Categoría</th>
-                    <th className="bg-surface-container px-4 py-3 font-semibold">Estado</th>
-                    <th className="rounded-r-lg bg-surface-container px-4 py-3" />
+                    <th scope="col" className="bg-surface-container px-4 py-3 font-semibold">
+                      Categoría
+                    </th>
+                    <th scope="col" className="bg-surface-container px-4 py-3 font-semibold">
+                      Estado
+                    </th>
+                    <th scope="col" className="rounded-r-lg bg-surface-container px-4 py-3">
+                      <span className="sr-only">Acciones</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {platillos.map((platillo) => (
-                    <tr key={platillo.id} className="border-b border-surface-container-high">
+                  {filtrados.map((platillo) => (
+                    <tr
+                      key={platillo.id}
+                      className="border-b border-surface-container-high odd:bg-surface-container-low/40"
+                    >
                       <td className="px-4 py-3 font-medium text-on-surface">{platillo.nombre}</td>
                       <td className="px-4 py-3">
                         {platillo.categoria ? (

@@ -204,6 +204,24 @@ export function IconoEntregar(props: IconoProps) {
   );
 }
 
+export function IconoHamburguesa(props: IconoProps) {
+  return (
+    <Base {...props}>
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </Base>
+  );
+}
+
+export function IconoInicio(props: IconoProps) {
+  return (
+    <Base {...props}>
+      <path d="m4.5 11 7.5-6 7.5 6" strokeLinejoin="round" />
+      <path d="M6.5 9.8V19h11V9.8" strokeLinejoin="round" />
+      <path d="M10 19v-4.5h4V19" />
+    </Base>
+  );
+}
+
 export function IconoRepetir(props: IconoProps) {
   return (
     <Base {...props}>

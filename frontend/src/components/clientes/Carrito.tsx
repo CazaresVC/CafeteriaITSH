@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import type { MenuItem } from '../../lib/menu';
 import type { LineaPedidoInput } from '../../lib/pedidos';
+import { useCarrito } from '../../lib/carrito';
 import { Button } from '../ui/button';
 import { Stepper } from '../ui/stepper';
 import { Badge } from '../ui/badge';
 import { EmptyState } from '../ui/empty-state';
-import { IconoCheck } from '../iconos';
+import { IconoCheck, IconoQuitar } from '../iconos';
 
 interface Props {
   items: MenuItem[];
@@ -19,16 +20,13 @@ function formatearPrecio(precio: number): string {
 }
 
 export function Carrito({ items, onConfirmar, enviando = false, error = null }: Props) {
-  const [cantidades, setCantidades] = useState<Record<number, number>>({});
+  const { cantidades, cambiar, limpiar, sincronizar } = useCarrito();
+
+  useEffect(() => {
+    sincronizar(items);
+  }, [items, sincronizar]);
 
   const disponibles = items.filter((item) => item.disponible);
-
-  function cambiar(platilloId: number, delta: number) {
-    setCantidades((actual) => {
-      const siguiente = Math.max(0, (actual[platilloId] ?? 0) + delta);
-      return { ...actual, [platilloId]: siguiente };
-    });
-  }
 
   const lineas: LineaPedidoInput[] = disponibles
     .filter((item) => (cantidades[item.platilloId] ?? 0) > 0)
@@ -50,13 +48,13 @@ export function Carrito({ items, onConfirmar, enviando = false, error = null }: 
 
   return (
     <div className="space-y-4">
-      <ul className="divide-y divide-surface-container-high overflow-hidden rounded-2xl border border-outline-variant/70 bg-white shadow-sm">
+      <ul className="divide-y divide-surface-container-high overflow-hidden rounded-xl border border-outline-variant/70 bg-surface-container-lowest shadow-sm">
         {disponibles.map((item) => {
           const cantidad = cantidades[item.platilloId] ?? 0;
           return (
             <li key={item.id} className="flex flex-wrap items-center gap-3 px-4 py-3.5">
               <div className="min-w-0 flex-1">
-                <p className="font-medium text-on-surface">{item.nombre}</p>
+                <p className="font-semibold text-on-surface">{item.nombre}</p>
                 <div className="mt-1 flex items-center gap-2">
                   <span className="font-heading text-sm font-bold text-primary">
                     {formatearPrecio(item.precio)}
@@ -75,17 +73,29 @@ export function Carrito({ items, onConfirmar, enviando = false, error = null }: 
         })}
       </ul>
 
-      <div className="flex items-center justify-between rounded-xl border border-outline-variant/70 bg-surface-container-low p-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-on-surface-variant">Total</span>
-          <Badge tono="neutral">{lineas.length} platillo(s)</Badge>
+      <div className="rounded-xl border border-outline-variant/70 bg-surface-container-low p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-on-surface-variant">Total del pedido</p>
+            <p className="text-xs text-outline">{lineas.length} platillo(s) seleccionado(s)</p>
+          </div>
+          <span
+            data-testid="total"
+            className="font-heading text-3xl font-extrabold tracking-tight text-primary"
+          >
+            {formatearPrecio(total)}
+          </span>
         </div>
-        <span
-          data-testid="total"
-          className="font-heading text-3xl font-extrabold tracking-tight text-primary"
-        >
-          {formatearPrecio(total)}
-        </span>
+        {lineas.length > 0 && (
+          <button
+            type="button"
+            onClick={limpiar}
+            className="mt-3 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-on-surface-variant hover:text-error focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <IconoQuitar className="h-4 w-4" />
+            Vaciar carrito
+          </button>
+        )}
       </div>
 
       {error && (

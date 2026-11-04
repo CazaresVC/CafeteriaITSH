@@ -74,15 +74,71 @@ cambios de comportamiento.
 - **Alternativas descartadas**: Dejar los mapas locales con colores ad-hoc (inconsistencia
   entre pantallas).
 
-## 7. Qué NO se hace (fuera de alcance)
+## 7. Navegación por rol (extensión CFITSH-25…29)
 
-- Navegación drawer/bottom bar y reestructuración de `LayoutModulo` (solo colores/superficies).
-- Rediseño de pantallas, nuevas rutas o pantallas nuevas.
-- Cambios en `src/lib/*`, `src/router.tsx`, `backend/` o `database/`.
+- **Decisión**: `LayoutModulo` mantiene un panel fijo en `lg:` y usa `DrawerLateral` en móvil;
+  `BarraInferior` sólo en caja y cliente. El estado del drawer es local y se cierra con
+  `onCerrar` al pulsar un enlace (sin `useEffect` de ruta, que dispara
+  `react-hooks/set-state-in-effect`).
+- **Rationale**: reutiliza los `EnlaceNavegacion` existentes, conserva `ProtectedRoute` y
+  reduce el cromo en móvil sin tocar rutas.
+- **Detalle**: `layout/activo.ts` compara pathname + `query` para distinguir sub-pasos
+  (`/caja?paso=captura` vs `/caja`). `query: {}` significa "sin query string".
+
+## 8. Flujo de caja en pasos (CFITSH-26)
+
+- **Decisión**: una sola ruta `/caja` con `useSearchParams` (`paso=inicio|captura|cobro|resultado`).
+- **Rationale**: conserva el flujo `useCrearMostrador` + `useCobrarPedido` sin rutas nuevas y
+  permite reintentar el cobro de un pedido `Pendiente` sin recapturar.
+- **Riesgo**: perder el carrito al recargar en el paso de cobro. **Mitigación**: el pedido ya
+  existe; el paso de resultado ofrece reintento/cancelación.
+
+## 9. KDS de cocina (CFITSH-27)
+
+- **Decisión**: agrupar por estado (`Pendiente`, `Pagado`, `En preparación`, `Listo`) sobre
+  `usePedidos({ estados: ESTADOS_ACTIVOS, refetchInterval: 5000 })`, con `useCambiarEstado` y
+  `BotonEstado` como CTA principal.
+- **Rationale**: `desing/diseño-cocina.md` no existe; se toma `Docs/DESIGN.md` + la pantalla
+  actual. Agrupar reduce el escaneo y conserva la regla de transiciones.
+- **Alternativas descartadas**: ordenar sólo por llegada (pierde prioridad de `Listo`) y
+  reescribir el polling con otra librería (dependencia nueva).
+
+## 10. Carrito persistente del cliente (CFITSH-28)
+
+- **Decisión**: `CarritoProvider` en `src/lib/carrito.tsx` con `localStorage`
+  (`cafe-itsh-carrito`), clave por `platilloId`, validación contra el menú vigente y limpieza
+  al cerrar sesión o completar el pedido.
+- **Rationale**: el cliente navega entre menú y carrito sin perder selección; el backend
+  sigue calculando totales y hora de recolección.
+- **Riesgo**: datos obsoletos (platillo eliminado/no disponible). **Mitigación**: al cargar el
+  menú se descartan los ítems no disponibles; el backend revalida al crear el pedido.
+
+## 11. Hora de recolección (CFITSH-28)
+
+- **Decisión**: mostrar `fechaRecoleccion` devuelta por el backend en confirmación, pago,
+  mis pedidos y detalle; no capturarla en el cliente.
+- **Rationale**: la regla de 10 minutos y la capacidad son del backend; duplicarla en el
+  frontend crearía inconsistencias.
+
+## 12. Administración (CFITSH-29)
+
+- **Decisión**: `/admin` renderiza `AdminInicio` con conteos derivados de
+  `useQuery(['usuarios'])`, `usePlatillos` y `useMenu`, más tarjetas de acceso.
+- **Rationale**: reutiliza hooks y endpoints existentes; no añade métricas de negocio ni
+  backend nuevo.
+
+## 13. Qué NO se hace (fuera de alcance)
+
+- Historial de ventas, configuración, métodos de pago con tarjeta/transferencia, descuentos,
+  captura de hora de recolección, imágenes de platillo, métricas de negocio y push.
+- Cambios en `backend/` o `database/`.
 - Dependencias npm nuevas o herramientas de estilos adicionales.
 
 ## Impacto esperado
 
-- **Archivos**: ~8 en `frontend/src` más, opcionalmente, `frontend/index.html`.
-- **Comportamiento en runtime**: sin cambios (solo clases/tokens).
-- **Riesgo**: bajo; el mayor es visual (radios) y de coexistencia de paletas, mitigados.
+- **Archivos**: ~8 de tokens + ~35 de la extensión en `frontend/src`, más `eslint.config.js`
+  y pruebas.
+- **Comportamiento en runtime**: mismos endpoints y reglas; cambia la interacción (navegación,
+  pasos de caja, carrito persistente).
+- **Riesgo**: medio por la cantidad de pantallas; mitigado con pruebas actualizadas y
+  verificación `typecheck`/`test`/`lint`/`build`.

@@ -79,6 +79,16 @@ un aviso con el resultado; cuando la fecha está vacía, el estado muestra cómo
 - Rol sin permiso: se rechaza con acceso prohibido.
 - Doble clic/repetición: no genera duplicados (garantía por la unicidad `(fecha, platillo)`).
 
+## Clarifications
+
+### Session 2026-10-31
+
+- Q: ¿Qué menú se copia? → A: El más reciente con fecha distinta al destino (`MAX(fecha)`).
+- Q: ¿La operación es idempotente? → A: Sí; `INSERT ... SELECT` con `NOT EXISTS` y la unicidad `(fecha, platillo_id)`.
+- Q: ¿Qué pasa con los platillos inactivos? → A: Se omiten.
+- Q: ¿Cuál es el contrato de respuesta? → A: 200 con `{ fecha, origen, agregados, omitidos }` en camelCase; 400 fecha inválida; 403 rol no administrador; 404 sin menú de origen.
+- Q: ¿Qué fecha destino se usa por defecto? → A: La fecha actual.
+
 ## Requirements *(mandatory)*
 
 ### Functional Requirements

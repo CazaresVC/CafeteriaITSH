@@ -1,6 +1,6 @@
-# Implementation Plan: Tokens de diseño (DESIGN.md) en el frontend
+# Implementation Plan: Tokens de diseño y rediseño de navegación/pantallas por rol
 
-**Branch**: `007-ui-redesign` | **Date**: 2026-10-14 | **Spec**: [spec.md](./spec.md)
+**Branch**: `007-ui-redesign` | **Date**: 2026-10-14 (extensión 2026-11-02) | **Spec**: [spec.md](./spec.md)
 
 **Input**: Feature specification from `/specs/007-ui-redesign/spec.md`
 
@@ -15,6 +15,13 @@ aditiva**: no cambia navegación, rutas, lógica de negocio, permisos ni endpoin
 introduce dependencias npm y no toca `backend/` ni `database/`. Es el pulido de UI del
 Sprint 5 acotado estrictamente a los tokens, como paso previo (y separado) de cualquier
 rediseño de navegación o de pantallas.
+
+**Extensión CFITSH-25…29 (2026-11-02)**: sobre esa base se reemplaza la navegación por
+drawer móvil + panel fijo en escritorio (bottom bar en caja y cliente) y se rediseñan caja
+(flujo en pasos), cocina (KDS agrupado), cliente (menú/carrito persistente/pago/mis pedidos)
+y administración (landing con conteos). Se conservan rutas, `ProtectedRoute`, hooks de datos,
+endpoints y backend; no se añaden dependencias. Decisiones en `research.md` y validación en
+`quickstart.md`.
 
 ## Technical Context
 
@@ -40,13 +47,14 @@ prueba de no regresión de la apariencia/API de los componentes base si aporta v
 peticiones en tiempo de ejecución salvo, opcionalmente, una hoja de fuentes web con respaldo
 local.
 
-**Constraints**: No modificar navegación, rutas, `lib/*`, `router.tsx` ni backend; conservar
-la API pública de los componentes `ui/*`; mantener la coexistencia de utilidades de color
-existentes para no romper pantallas no migradas; respetar §II/§19 (responsiva, ≥ 44 px, alto
-contraste).
+**Constraints**: Conservar rutas, `ProtectedRoute`, hooks de datos y backend; la extensión sí
+puede cambiar la navegación visual y la estructura de las pantallas. Mantener la API pública
+de los componentes `ui/*`, la coexistencia de utilidades de color existentes y §II/§19
+(responsiva, ≥ 44 px, alto contraste). Sin dependencias npm nuevas.
 
-**Scale/Scope**: ~8 archivos del frontend; 1 archivo de tema, 4 componentes base, 1 layout, 2
-mapas de color de estado. Sin endpoints, sin migraciones, sin entidades nuevas.
+**Scale/Scope**: Tokens (~8 archivos) + extensión (~35 archivos del frontend: 4 layouts, 4
+componentes de layout, 4 UI compartidas, carrito, ~12 pantallas/componentes y 4 pruebas). Sin
+endpoints, sin migraciones, sin entidades nuevas.
 
 ## Constitution Check
 
@@ -73,7 +81,7 @@ Sin violaciones. No se requiere Complexity Tracking.
 specs/007-ui-redesign/
 ├── spec.md              # Especificación (/speckit-specify)
 ├── plan.md              # Este archivo (/speckit-plan)
-├── research.md          # Fase 0: decisiones de tokens y fuentes
+├── research.md          # Fase 0: decisiones de tokens, navegación, caja, KDS y carrito
 ├── data-model.md        # N/A: sin entidades de datos
 ├── quickstart.md        # Fase 1: validación visual y de comandos
 ├── checklists/
@@ -91,28 +99,55 @@ frontend/
 ├── src/
 │   ├── index.css                       # @theme con los tokens de Docs/DESIGN.md + tema global
 │   ├── components/
-│   │   ├── LayoutModulo.tsx            # encabezado/superficies con tokens (sin cambiar navegación)
+│   │   ├── LayoutModulo.tsx            # tokens + shell de navegación (extensión)
 │   │   ├── ui/
 │   │   │   ├── button.tsx              # variantes → tokens (primary/secondary/ghost/danger)
 │   │   │   ├── card.tsx                # superficies, borde y radios de token
 │   │   │   ├── input.tsx               # borde, foco y superficies de token
 │   │   │   └── label.tsx               # color de texto de token
 │   │   ├── cocina/
-│   │   │   └── PedidoCard.tsx          # COLOR_ESTADO → tokens status-*
+│   │   │   └── PedidoCard.tsx          # KDS + tokens status-*
 │   │   └── clientes/
-│   │       └── (sin cambios de estructura)
+│   │       └── Carrito.tsx             # carrito desde contexto (extensión)
 │   ├── pages/
-│   │   └── clientes/
-│   │       └── MisPedidos.tsx          # COLOR_ESTADO → tokens status-*
-│   └── (sin cambios en router.tsx ni lib/*)
+│   │   ├── clientes/
+│   │   │   └── MisPedidos.tsx          # COLOR_ESTADO → tokens status-*
+│   │   ├── admin/                      # + Inicio.tsx (extensión)
+│   │   ├── caja/                       # flujo por pasos (extensión)
+│   │   └── cocina/                     # KDS agrupado (extensión)
+│   ├── lib/carrito.tsx                 # contexto + localStorage (extensión)
+│   └── router.tsx                      # /admin → Inicio (extensión)
 └── .
 ```
 
 **Structure Decision**: Solo frontend, conforme a la constitución §17 (`src/components`,
 `src/pages`). Los tokens viven en un único lugar (`src/index.css`, bloque `@theme`) y se
-consumen desde los componentes base y el tema global; ningún archivo de `backend/`,
-`database/` o de la lógica de frontend (`src/lib/`, `src/router.tsx`) se modifica.
+consumen desde los componentes base y el tema global. La extensión añade `lib/carrito.tsx` y
+ajusta `router.tsx` sólo para la landing de `/admin`; no modifica `backend/` ni `database/`.
+
+## Extensión CFITSH-25…29 — estructura
+
+```text
+frontend/src/
+├── components/
+│   ├── LayoutModulo.tsx            # shell: sidebar fijo, header, drawer, bottom bar
+│   ├── layout/                     # tipos.ts, activo.ts, DrawerLateral.tsx, BarraInferior.tsx
+│   ├── ui/                         # + buscador, chips-categoria, boton-flotante-cobro, panel-lateral
+│   ├── caja/PedidoMostrador.tsx    # búsqueda, chips, stepper, resumen y total
+│   ├── cocina/PedidoCard.tsx       # KDS: folio, espera, CTA único
+│   ├── clientes/Carrito.tsx        # carrito desde contexto
+│   └── menu/PlatilloCard.tsx       # stepper de cantidad
+├── lib/carrito.tsx                 # CarritoProvider + localStorage
+├── pages/
+│   ├── admin/                      # AdminLayout, Inicio (nuevo), Usuarios, Platillos, Menu
+│   ├── caja/                       # CajaLayout, Caja (pasos), Entregas
+│   ├── cocina/                     # CocinaLayout, Cocina (agrupada)
+│   └── clientes/                   # ClientesLayout, Menu, Carrito, Pago, MisPedidos, PedidoDetalle
+├── router.tsx                      # /admin → Inicio (sin rutas nuevas)
+└── eslint.config.js                # override allowExportNames para useCarrito
+```
 
 ## Complexity Tracking
 
-Sin violaciones; no aplica.
+Sin violaciones; no aplica. La extensión no añade dependencias ni toca backend/base de datos;
+la persistencia del carrito es del lado cliente y se valida contra el menú vigente.

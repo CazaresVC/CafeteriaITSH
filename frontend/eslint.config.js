@@ -25,4 +25,10 @@ export default defineConfig([
       'react-refresh/only-export-components': ['error', { allowExportNames: ['useAuth'] }],
     },
   },
+  {
+    files: ['src/lib/carrito.tsx'],
+    rules: {
+      'react-refresh/only-export-components': ['error', { allowExportNames: ['useCarrito'] }],
+    },
+  },
 ]);

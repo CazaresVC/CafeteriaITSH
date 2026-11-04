@@ -1,16 +1,16 @@
 ---
-description: "Task list for Tokens de diseño (DESIGN.md) en el frontend"
+description: "Task list for Tokens de diseño y rediseño de navegación/pantallas por rol"
 ---
 
-# Tasks: Tokens de diseño (DESIGN.md) en el frontend
+# Tasks: Tokens de diseño y rediseño de navegación/pantallas por rol
 
 **Input**: Design documents from `/specs/007-ui-redesign/`
 
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md
 
-**Tests**: Incluidos de forma mínima (prueba de humo / no regresión de API de componentes).
-La funcionalidad es de presentación; no hay lógica de negocio nueva que requiera cobertura
-de estados, pagos o permisos (§VIII). Las pruebas existentes MUST seguir en verde.
+**Tests**: Tokens con prueba de humo / no regresión. La extensión CFITSH-25…29 actualiza las
+pruebas de caja, cocina, menú, carrito y pedidos porque cambian la interacción (pasos, chips,
+steppers, contexto). Las pruebas existentes MUST seguir en verde.
 
 **Organization**: Tareas agrupadas por historia de usuario para permitir implementación y
 prueba independientes.
@@ -18,7 +18,7 @@ prueba independientes.
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Puede ejecutarse en paralelo (archivos distintos, sin dependencias)
-- **[Story]**: US1, US2 o US3
+- **[Story]**: US1…US7
 
 ## Path Conventions
 
@@ -116,11 +116,65 @@ botón y la navegación del layout siguen funcionando igual.
 **Purpose**: Verificación final de la funcionalidad
 
 - [x] T018 [P] Revisar contraste (AA) de las combinaciones principales y los tamaños táctiles ≥ 44 px en caja y cocina
-- [x] T019 [P] Confirmar con `git diff --stat` que no hay cambios en `backend/`, `database/`, `frontend/src/lib/` ni `frontend/src/router.tsx` (SC-004)
+- [x] T019 [P] Confirmar con `git diff --stat` que la fase de tokens no cambió `backend/`, `database/`, `frontend/src/lib/` ni `frontend/src/router.tsx` (SC-004)
 - [x] T020 Verificar `frontend/package.json` sin dependencias nuevas (SC-005)
 - [x] T021 Ejecutar `npm.cmd run typecheck`, `test`, `lint` y `build` en verde (SC-001)
 - [ ] T022 Ejecutar los escenarios de `quickstart.md` y registrar resultados
-- [ ] T023 Confirmar la trazabilidad de FR-001…FR-008 y SC-001…SC-005
+  - Evidencia pendiente de la ejecución visual (login, menú, caja, cocina); el checklist está
+    preparado en `Docs/qa/accesibilidad.md`.
+- [x] T023 Confirmar la trazabilidad de FR-001…FR-008 y SC-001…SC-005
+  - Registrada en `specs/010-quality-assurance/traceability.md` (FR-001…FR-040 y SC-001…SC-009).
+
+---
+
+## Extensión CFITSH-25…29 (2026-11-02)
+
+**Goal**: Drawer/bottom bar + rediseño de caja, cocina, cliente y administración sin cambiar
+rutas, endpoints ni lógica de negocio.
+
+### Phase 7: Navegación y layouts (US4-US7)
+
+- [x] T024 [P] Extender `EnlaceNavegacion` con `query` y crear `frontend/src/components/layout/activo.ts` (`enlaceActivo`/`destinoEnlace`)
+- [x] T025 [P] Reescribir `frontend/src/components/layout/DrawerLateral.tsx` y `BarraInferior.tsx` con el helper de enlace activo
+- [x] T026 [US4-US7] Reescribir `frontend/src/components/LayoutModulo.tsx`: sidebar fijo `lg:`, header sticky, hamburguesa, drawer, bottom bar, perfil/logout y slot `acciones`; limpiar carrito al salir
+- [x] T027 [P] [US4] Rediseñar `frontend/src/pages/caja/CajaLayout.tsx` con badge de pedidos `Listo` (polling 5 s)
+- [x] T028 [P] [US5] Rediseñar `frontend/src/pages/cocina/CocinaLayout.tsx`
+- [x] T029 [P] [US6] Rediseñar `frontend/src/pages/clientes/ClientesLayout.tsx` (bottom bar oculto en `/pedido*`, `NotificacionBadge`)
+- [x] T030 [P] [US7] Rediseñar `frontend/src/pages/admin/AdminLayout.tsx`
+
+### Phase 8: UI compartida
+
+- [x] T031 [P] Crear `frontend/src/components/ui/buscador.tsx`, `chips-categoria.tsx`, `boton-flotante-cobro.tsx` y `panel-lateral.tsx`
+- [x] T032 [P] Añadir `className` opcional a `frontend/src/components/BotonEstado.tsx` para reutilización
+
+### Phase 9: Caja (US4)
+
+- [x] T033 [US4] Reescribir `frontend/src/components/caja/PedidoMostrador.tsx` (búsqueda, chips, stepper, barra de total, `onContinuar` y resumen)
+- [x] T034 [US4] Reescribir `frontend/src/pages/caja/Caja.tsx` con pasos `inicio`/`captura`/`cobro`/`resultado` vía `useSearchParams`; encadenar `useCrearMostrador` + `useCobrarPedido` y reintento de cobro
+
+### Phase 10: Cocina (US5)
+
+- [x] T035 [US5] Reescribir `frontend/src/components/cocina/PedidoCard.tsx` (folio grande, espera, urgencia, CTA único)
+- [x] T036 [US5] Reescribir `frontend/src/pages/cocina/Cocina.tsx` (agrupación por estado, polling, contadores, estados vacío/error/conflicto)
+
+### Phase 11: Cliente (US6)
+
+- [x] T037 [US6] Crear `frontend/src/lib/carrito.tsx` (`CarritoProvider`, `useCarrito`, persistencia `cafe-itsh-carrito`) y montarlo en `App.tsx`
+- [x] T038 [US6] Rediseñar `frontend/src/pages/clientes/Menu.tsx` y `components/menu/PlatilloCard.tsx` (buscador, chips, steppers, botón flotante)
+- [x] T039 [US6] Reescribir `components/clientes/Carrito.tsx` con contexto; limpiar carrito en `pages/clientes/Carrito.tsx` y `Pago.tsx`; mostrar `fechaRecoleccion` en `MisPedidos.tsx` y `PedidoDetalle.tsx`
+
+### Phase 12: Administración (US7)
+
+- [x] T040 [US7] Crear `frontend/src/pages/admin/Inicio.tsx` (conteos con `useQuery(['usuarios'])`, `usePlatillos`, `useMenu`) y actualizar `router.tsx` (`/admin` → Inicio)
+- [x] T041 [P] [US7] Añadir búsqueda/chips a `pages/admin/Platillos.tsx` y mover el formulario de `pages/admin/Usuarios.tsx` a `PanelLateral` con CTA "Nuevo usuario"
+
+### Phase 13: Pruebas y verificación de la extensión
+
+- [x] T042 [P] Actualizar `frontend/tests/Caja.test.tsx` y `PedidoMostrador.test.tsx` al flujo por pasos y etiquetas nuevas
+- [x] T043 [P] Actualizar `frontend/tests/Menu.test.tsx` y `Carrito.test.tsx` a buscador/chips/stepper y `CarritoProvider`
+- [x] T044 Ajustar `eslint.config.js` (`allowExportNames: ['useCarrito']`) y eliminar el `useEffect` de cambio de ruta en `LayoutModulo` (regla `set-state-in-effect`)
+- [x] T045 Ejecutar `npm.cmd run typecheck`, `npm.cmd test -- --run` (11 archivos, 35 pruebas), `npm.cmd run lint` y `npm.cmd run build`
+- [x] T046 Confirmar trazabilidad US4→FR-009/010, US5→FR-011, US6→FR-012/013, US7→FR-014 y SC-006…SC-009
 
 ---
 
@@ -133,6 +187,8 @@ botón y la navegación del layout siguen funcionando igual.
 - **User Stories (Phases 3–5)**: dependen de Foundational; US1 (P1) es el MVP; US2 (P2) y
   US3 (P3) son incrementales y siguen a US1
 - **Polish (Phase 6)**: depende de las historias deseadas
+- **Extensión (Phases 7–13)**: depende de los tokens (US1-US3); navegación (7) bloquea las
+  pantallas; UI compartida (8) bloquea caja/cocina/cliente/admin; pruebas (13) al final
 
 ### User Story Dependencies
 
@@ -186,8 +242,10 @@ Task: "Migrar frontend/src/components/ui/label.tsx a tokens"
 
 - [P] = archivos distintos, sin dependencias
 - Etiqueta [Story] para trazabilidad con `spec.md`
-- No se toca `router.tsx`, `src/lib/*`, `backend/` ni `database/`
+- La extensión sí toca `router.tsx` (solo `/admin` → Inicio) y añade `src/lib/carrito.tsx`;
+  no toca `backend/` ni `database/`
 - La paleta por defecto de Tailwind se mantiene (solo se añaden tokens) para no romper
   pantallas no migradas
 - Sin dependencias npm nuevas (§22)
+- Las rutas de la extensión son las mismas; sólo cambia la landing de `/admin`
 - Commit tras cada tarea o grupo lógico

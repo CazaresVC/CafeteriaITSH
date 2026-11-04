@@ -9,6 +9,7 @@ interface Props {
   onClick: () => void;
   variante?: Variante;
   disabled?: boolean;
+  className?: string;
 }
 
 export function BotonEstado({
@@ -16,13 +17,14 @@ export function BotonEstado({
   onClick,
   variante = 'primary',
   disabled = false,
+  className,
 }: Props) {
   return (
     <Button
       variante={variante}
       onClick={onClick}
       disabled={disabled}
-      className={cn('min-h-11 flex-1')}
+      className={cn('min-h-11 flex-1', className)}
     >
       {children}
     </Button>

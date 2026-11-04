@@ -197,6 +197,16 @@ el menú de los clientes.
   corromperse.
 - Consulta del menú durante un horario de receso con alta concurrencia.
 
+## Clarifications
+
+### Session 2026-10-31
+
+- Q: ¿Se integra una pasarela de pago real en el MVP? → A: No; se usa una pasarela simulada detrás de una interfaz sustituible (`utils/payment/gateway.ts`).
+- Q: ¿Qué canal de notificación es obligatorio? → A: In-app obligatorio; el canal externo (correo/push) es opcional y se activa por configuración.
+- Q: ¿Se exige una cobertura mínima de pruebas? → A: No se fija; la lógica crítica (autenticación, permisos, pedidos, pagos y estados) debe estar cubierta.
+- Q: ¿El registro de cliente inicia sesión automáticamente? → A: No; el flujo es registro → inicio de sesión.
+- Q: ¿Qué ocurre si un cliente consulta un pedido ajeno? → A: Responde 404 para no revelar su existencia.
+
 ## Requirements *(mandatory)*
 
 ### Functional Requirements

@@ -70,6 +70,16 @@ inmediato.
 - Consulta del menú en móvil con alta concurrencia durante el receso.
 - Especial del día para una fecha distinta a la del menú vigente.
 
+## Clarifications
+
+### Session 2026-10-31
+
+- Q: ¿Dónde se guarda el precio del menú? → A: Congelado en `menu_dia` al publicar; `platillo` es el catálogo maestro.
+- Q: ¿Cómo se distingue un platillo inactivo de uno agotado? → A: `platillo.activo` controla el catálogo y `menu_dia.disponible` la disponibilidad de ese día.
+- Q: ¿Se usa caché de servidor? → A: No; la consulta lee directamente por fecha y el cliente refresca con TanStack Query.
+- Q: ¿Cómo se evita el problema N+1? → A: Con una consulta única que une `menu_dia` con `platillo`.
+- Q: ¿Qué validación tiene el precio? → A: No puede ser negativo y admite como máximo dos decimales.
+
 ## Requirements *(mandatory)*
 
 ### Functional Requirements

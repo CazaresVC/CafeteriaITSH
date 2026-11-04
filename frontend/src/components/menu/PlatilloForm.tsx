@@ -54,19 +54,44 @@ export function PlatilloForm({ inicial = null, enviando = false, onSubmit, onCan
     <form className="grid gap-4 sm:grid-cols-2" onSubmit={enviar} noValidate>
       <div className="space-y-1">
         <Label htmlFor="platillo-nombre">Nombre</Label>
-        <Input id="platillo-nombre" {...register('nombre')} />
-        {errors.nombre && <p className="text-sm text-error">{errors.nombre.message}</p>}
+        <Input
+          id="platillo-nombre"
+          aria-invalid={errors.nombre ? true : undefined}
+          aria-describedby={errors.nombre ? 'platillo-nombre-error' : undefined}
+          {...register('nombre')}
+        />
+        {errors.nombre && (
+          <p id="platillo-nombre-error" className="text-sm text-error" role="alert">
+            {errors.nombre.message}
+          </p>
+        )}
       </div>
       <div className="space-y-1">
         <Label htmlFor="platillo-categoria">Categoría</Label>
-        <Input id="platillo-categoria" {...register('categoria')} />
-        {errors.categoria && <p className="text-sm text-error">{errors.categoria.message}</p>}
+        <Input
+          id="platillo-categoria"
+          aria-invalid={errors.categoria ? true : undefined}
+          aria-describedby={errors.categoria ? 'platillo-categoria-error' : undefined}
+          {...register('categoria')}
+        />
+        {errors.categoria && (
+          <p id="platillo-categoria-error" className="text-sm text-error" role="alert">
+            {errors.categoria.message}
+          </p>
+        )}
       </div>
       <div className="space-y-1 sm:col-span-2">
         <Label htmlFor="platillo-descripcion">Descripción</Label>
-        <Input id="platillo-descripcion" {...register('descripcion')} />
+        <Input
+          id="platillo-descripcion"
+          aria-invalid={errors.descripcion ? true : undefined}
+          aria-describedby={errors.descripcion ? 'platillo-descripcion-error' : undefined}
+          {...register('descripcion')}
+        />
         {errors.descripcion && (
-          <p className="text-sm text-error">{errors.descripcion.message}</p>
+          <p id="platillo-descripcion-error" className="text-sm text-error" role="alert">
+            {errors.descripcion.message}
+          </p>
         )}
       </div>
       <div className="flex gap-2 sm:col-span-2">

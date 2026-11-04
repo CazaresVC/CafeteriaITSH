@@ -1,16 +1,16 @@
-# Feature Specification: Tokens de diseño (DESIGN.md) en el frontend
+# Feature Specification: Tokens de diseño y rediseño de navegación/pantallas por rol
 
 **Feature Branch**: `007-ui-redesign`
 
 **Created**: 2026-10-14
 
-**Status**: Draft
+**Status**: Implemented (tokens + extensión CFITSH-25…29, 2026-11-02)
 
 **Input**: Aplicar el sistema de diseño canónico `Docs/DESIGN.md` (paleta, tipografía,
-radios y espaciado) al frontend como tokens de Tailwind, de forma aditiva y sin cambiar
-comportamiento, navegación, rutas ni lógica de negocio. Alcance acotado a los tokens: la
-navegación (drawer/bottom bar) y el rediseño de pantallas de las propuestas `desing/`
-quedan fuera de esta spec.
+radios y espaciado) al frontend como tokens de Tailwind y, en una segunda fase aprobada
+(CFITSH-25…29), reemplazar la navegación por drawer/bottom bar y rediseñar las pantallas
+de caja, cocina, cliente y administración conforme a `desing/`, sin cambiar rutas,
+endpoints ni lógica de negocio.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -87,6 +87,74 @@ en ambas pantallas.
 
 ---
 
+### User Story 4 - Navegación y rediseño de caja (Priority: P2, extensión CFITSH-25/26)
+
+El cajero navega con drawer lateral en móvil y panel fijo en escritorio, captura pedidos
+con búsqueda, chips de categoría y stepper, revisa el cobro en un paso y entrega pedidos
+listos con contador visible.
+
+**Independent Test**: En `/caja` el drawer/bottom bar navega a Inicio, Capturar pedido y
+Pedidos listos; el flujo captura → cobro conserva `useCrearMostrador` + `useCobrarPedido`
+y, si el cobro falla, el pedido queda `Pendiente` con reintento sin recapturar.
+
+**Acceptance Scenarios**:
+
+1. **Given** el cajero en `/caja`, **When** abre el menú en móvil, **Then** ve drawer con
+   perfil, Inicio, Capturar pedido y Pedidos listos con contador.
+2. **Given** un carrito de mostrador, **When** pulsa “Registrar y cobrar”, **Then** se crea
+   el pedido y se cobra en efectivo en un solo paso.
+3. **Given** un cobro fallido, **When** se muestra el resultado, **Then** el folio queda
+   `Pendiente` y se ofrece “Reintentar cobro” y “Cancelar pedido”.
+
+### User Story 5 - Tablero de cocina (KDS) (Priority: P2, extensión CFITSH-27)
+
+El cocinero ve pedidos agrupados por estado, con folio grande, tiempo de espera, contadores,
+actualización automática y una acción principal de un toque por pedido.
+
+**Independent Test**: `/cocina` agrupa `Pendiente`, `Pagado`, `En preparación` y `Listo`,
+mantiene `ESTADOS_ACTIVOS`, `usePedidos({ refetchInterval: 5000 })` y `useCambiarEstado`, y
+muestra estados vacío/error/conflicto.
+
+**Acceptance Scenarios**:
+
+1. **Given** pedidos activos, **When** carga el tablero, **Then** cada tarjeta muestra folio,
+   artículos, total, espera y el CTA del siguiente estado.
+2. **Given** un error de transición, **When** falla el cambio de estado, **Then** se muestra
+   el mensaje y la opción de actualizar el tablero.
+
+### User Story 6 - Menú y carrito del cliente (Priority: P2, extensión CFITSH-28)
+
+El cliente explora el menú con búsqueda y categorías, agrega cantidades con stepper, conserva
+su carrito al recargar y confirma el pedido con su hora de recolección calculada por el backend.
+
+**Independent Test**: `/menu` muestra buscador, chips y steppers; el carrito persiste en
+`localStorage`, se valida contra el menú vigente y se limpia al cerrar sesión o completar el
+pedido; `/pedido` confirma y `/mis-pedidos` muestra `fechaRecoleccion`.
+
+**Acceptance Scenarios**:
+
+1. **Given** un platillo disponible, **When** el cliente ajusta su cantidad, **Then** la barra
+   flotante muestra cantidad y total y enlaza a `/pedido`.
+2. **Given** el carrito con productos, **When** recarga la página, **Then** las cantidades se
+   conservan y los productos no disponibles se descartan.
+3. **Given** un pedido pagado, **When** se consulta su detalle, **Then** se muestra la hora de
+   recolección devuelta por el backend.
+
+### User Story 7 - Panel de administración (Priority: P2, extensión CFITSH-29)
+
+El administrador entra a un panel de inicio con conteos y accesos rápidos, y gestiona
+usuarios, platillos y menú con búsqueda, filtros, panel lateral y estados vacío/error.
+
+**Independent Test**: `/admin` muestra el inicio con conteos de usuarios activos, catálogo y
+menú publicado; las pantallas existentes conservan sus endpoints y mutaciones.
+
+**Acceptance Scenarios**:
+
+1. **Given** el administrador en `/admin`, **When** entra, **Then** ve accesos rápidos a
+   Usuarios, Platillos y Menú del día con conteos.
+2. **Given** el catálogo, **When** busca o filtra por categoría, **Then** la lista se filtra
+   sin cambiar los datos ni las mutaciones existentes.
+
 ### Edge Cases
 
 - Las fuentes de `DESIGN.md` no están disponibles en el dispositivo: debe aplicarse la
@@ -97,6 +165,25 @@ en ambas pantallas.
 - Coexistencia de clases de color por defecto con los nuevos tokens: ambas deben seguir
   generándose para no romper pantallas aún no migradas.
 - Un componente con un color de estado desconocido: debe degradar a un color neutro legible.
+
+## Clarifications
+
+### Session 2026-10-31
+
+- Q: ¿Cómo se implementan los tokens de diseño? → A: Con un bloque `@theme` de Tailwind v4 en `index.css`.
+- Q: ¿Qué nomenclatura usan los tokens? → A: Semántica (`--color-primary`, `--font-heading`), no escalas numéricas.
+- Q: ¿Se elimina la paleta por defecto? → A: No; se añaden tokens para no romper pantallas aún no migradas.
+- Q: ¿Se toca el backend o el router? → A: No; el cambio es solo de presentación.
+- Q: ¿Se añaden dependencias npm? → A: No.
+
+### Session 2026-11-02 (extensión CFITSH-25…29)
+
+- Q: ¿Se crea una spec nueva para el rediseño? → A: No; se extiende 007 (CFITSH-25…29).
+- Q: ¿Qué navegación se usa? → A: Drawer lateral móvil + panel fijo en escritorio; bottom bar sólo en caja y cliente. Se reutilizan rutas y `ProtectedRoute`.
+- Q: ¿Se cambia el backend para la hora de recolección? → A: No; se muestra sólo `fechaRecoleccion` calculada por el backend.
+- Q: ¿Cómo persiste el carrito del cliente? → A: Contexto React + `localStorage`, validado contra el menú vigente.
+- Q: ¿De dónde sale el KDS de cocina? → A: `Docs/DESIGN.md` + implementación actual, porque `desing/diseño-cocina.md` no existe.
+- Q: ¿Se añaden dependencias npm? → A: No.
 
 ## Requirements *(mandatory)*
 
@@ -115,8 +202,26 @@ en ambas pantallas.
 - **FR-006**: La aplicación MUST seguir siendo responsiva y conservar el área táctil mínima
   de 44 px en caja y cocina.
 - **FR-007**: La aplicación MUST NOT incorporar dependencias npm nuevas.
-- **FR-008**: La aplicación MUST NOT modificar la navegación, las rutas, la lógica de
-  negocio ni el backend.
+- **FR-008**: La aplicación MUST conservar las rutas existentes, `ProtectedRoute`, la lógica
+  de negocio y el backend; sólo puede cambiar la presentación y la navegación visual.
+- **FR-009**: Los cuatro layouts por rol MUST usar drawer lateral en móvil y panel fijo en
+  escritorio, con bottom bar en caja y cliente.
+- **FR-010**: Caja MUST conservar `useCrearMostrador` + `useCobrarPedido` y encadenar
+  “Registrar y cobrar”; un cobro fallido MUST dejar el pedido `Pendiente` con reintento sin
+  recaptura.
+- **FR-011**: Cocina MUST conservar `ESTADOS_ACTIVOS`, el polling de 5 s y `useCambiarEstado`,
+  agrupando pedidos por estado y mostrando folio, espera y CTA principal.
+- **FR-012**: El menú del cliente MUST ofrecer búsqueda, chips de categoría y stepper; el
+  carrito MUST persistir en `localStorage`, validarse contra el menú y limpiarse al cerrar
+  sesión o completar el pedido.
+- **FR-013**: Las pantallas del cliente MUST mostrar `fechaRecoleccion` cuando el backend la
+  devuelva, sin capturar ni enviar una hora propia.
+- **FR-014**: `/admin` MUST tener una landing con conteos y accesos rápidos usando sólo los
+  endpoints existentes de usuarios, platillos y menú.
+- **FR-015**: Los estados vacío, carga, error y reintento MUST ser consistentes en las
+  pantallas rediseñadas.
+- **FR-016**: La aplicación MUST mantener el área táctil mínima de 44 px y el contraste AA en
+  caja y cocina.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -126,6 +231,8 @@ en ambas pantallas.
   cuya apariencia pasa a usar tokens conservando su API.
 - **Insignia de estado**: Indicador visual del estado de un pedido, coloreado con el token
   del estado correspondiente.
+- **Carrito del cliente**: Estado de UI con cantidades por `platilloId`, persistido en
+  `localStorage` y validado contra el menú vigente; no es una entidad de backend.
 
 ## Success Criteria *(mandatory)*
 
@@ -139,6 +246,13 @@ en ambas pantallas.
   cliente (100 % de coincidencia).
 - **SC-004**: Ningún archivo fuera de `frontend/` es modificado por esta funcionalidad.
 - **SC-005**: Ninguna dependencia npm nueva se agrega al proyecto.
+- **SC-006**: Los cuatro layouts usan drawer en móvil y panel fijo en escritorio; caja y
+  cliente muestran bottom bar con contadores cuando aplica.
+- **SC-007**: El flujo de caja crea y cobra en un solo paso y permite reintentar un cobro
+  fallido sin recrear el pedido.
+- **SC-008**: El carrito del cliente sobrevive una recarga y descarta productos no disponibles.
+- **SC-009**: `typecheck`, `test`, `lint` y `build` del frontend permanecen en verde con las
+  pruebas actualizadas.
 
 ## Assumptions
 
@@ -148,10 +262,13 @@ en ambas pantallas.
   es opcional y, si se usa, debe incluir respaldo local para no depender de la conectividad.
 - El alcance es solo modo claro y solo presentación: no se cambian vistas de datos, permisos
   ni endpoints.
-- Quedan **fuera de alcance** (propuestas en `desing/`, requieren aprobación §27): navegación
-  por drawer/bottom bar, rediseño de pantallas, historial de ventas, métodos de pago con
-  tarjeta/transferencia, descuentos, imágenes de platillo, métricas de admin y notificaciones
-  push.
+- La extensión CFITSH-25…29 **sí incluye** navegación drawer/bottom bar y rediseño de las
+  pantallas de caja, cocina, cliente y administración, reutilizando rutas y endpoints.
+- Siguen **fuera de alcance** (§27): historial de ventas, configuración, métodos de pago con
+  tarjeta/transferencia, descuentos, captura de hora de recolección, imágenes de platillo,
+  métricas de negocio y notificaciones push.
+- `desing/diseño-cocina.md` no existe; el KDS se deriva de `Docs/DESIGN.md` y de la
+  implementación actual, documentando la decisión en `research.md`.
 - El resto del sistema (sprints 1–5) está implementado y disponible.
 
 ## Trazabilidad a spec 001 y al roadmap
@@ -160,7 +277,9 @@ en ambas pantallas.
   conforme a los tokens de diseño").
 - Requisitos de interfaz de la constitución (§II/§19): UI responsiva, área táctil ≥ 44 px,
   alto contraste y navegación simple.
-- Sin FRs funcionales nuevos de la spec maestra: no se altera ningún flujo; todo es
-  presentación (FR-013/014, FR-016 y FR-026/027 permanecen intactas en comportamiento).
+- La extensión no añade FRs funcionales nuevos de la spec maestra: se reutilizan los flujos
+  existentes (FR-013/014, FR-016 y FR-026/027 permanecen intactos en comportamiento).
+- Trazabilidad de la extensión: US4→FR-009/010, US5→FR-011, US6→FR-012/013,
+  US7→FR-014, transversal→FR-015/016 y SC-006…SC-009.
 - Fuera de alcance: funcionalidades fuera del MVP y los elementos de `desing/` no listados
-  en la User Stories de esta spec.
+  en las User Stories de esta spec.

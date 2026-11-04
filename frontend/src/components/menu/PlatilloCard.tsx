@@ -1,20 +1,25 @@
 import type { MenuItem } from '../../lib/menu';
 import { Badge } from '../ui/badge';
+import { Stepper } from '../ui/stepper';
 import { cn } from '../../lib/utils';
 
 function formatearPrecio(precio: number): string {
   return `$${precio.toFixed(2)}`;
 }
 
-export function PlatilloCard({ item }: { item: MenuItem }) {
+interface Props {
+  item: MenuItem;
+  cantidad?: number;
+  onCambiar?: (delta: number) => void;
+}
+
+export function PlatilloCard({ item, cantidad = 0, onCambiar }: Props) {
   return (
     <li
       aria-disabled={!item.disponible}
       className={cn(
-        'flex flex-col rounded-2xl border bg-white p-4 shadow-sm transition-all',
-        item.disponible
-          ? 'border-outline-variant/70 hover:-translate-y-0.5 hover:border-primary/40'
-          : 'border-outline-variant/50 opacity-60',
+        'flex flex-col rounded-xl border bg-surface-container-lowest p-4 shadow-sm',
+        item.disponible ? 'border-outline-variant/70' : 'border-outline-variant/50 opacity-60',
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -33,6 +38,18 @@ export function PlatilloCard({ item }: { item: MenuItem }) {
         {item.especial && <Badge tono="especial">Especial</Badge>}
         {!item.disponible && <Badge tono="error">No disponible</Badge>}
       </div>
+
+      {item.disponible && onCambiar && (
+        <div className="mt-4 flex items-center justify-between border-t border-surface-container-high pt-3">
+          <span className="text-sm font-medium text-on-surface-variant">Cantidad</span>
+          <Stepper
+            cantidad={cantidad}
+            onCambiar={onCambiar}
+            nombre={item.nombre}
+            testid={`cantidad-menu-${item.platilloId}`}
+          />
+        </div>
+      )}
     </li>
   );
 }

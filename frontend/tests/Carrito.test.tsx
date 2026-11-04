@@ -1,7 +1,8 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Carrito } from '../src/components/clientes/Carrito';
+import { CarritoProvider } from '../src/lib/carrito';
 import type { MenuItem } from '../src/lib/menu';
 
 const disponible: MenuItem = {
@@ -28,11 +29,23 @@ const agotado: MenuItem = {
   especial: false,
 };
 
+function mostrar(items: MenuItem[], onConfirmar = vi.fn()) {
+  return render(
+    <CarritoProvider>
+      <Carrito items={items} onConfirmar={onConfirmar} />
+    </CarritoProvider>,
+  );
+}
+
 describe('Carrito — armar un pedido anticipado', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
   it('selecciona platillos, maneja cantidades y muestra el total', async () => {
     const onConfirmar = vi.fn();
     const user = userEvent.setup();
-    render(<Carrito items={[disponible, agotado]} onConfirmar={onConfirmar} />);
+    mostrar([disponible, agotado], onConfirmar);
 
     expect(screen.getByTestId('total').textContent).toBe('$0.00');
     expect(screen.queryByText('Café de olla')).toBeNull();
@@ -50,7 +63,7 @@ describe('Carrito — armar un pedido anticipado', () => {
   });
 
   it('deshabilita confirmar mientras no hay selección', () => {
-    render(<Carrito items={[disponible]} onConfirmar={vi.fn()} />);
+    mostrar([disponible]);
 
     expect(screen.getByRole('button', { name: 'Confirmar pedido' }).hasAttribute('disabled')).toBe(
       true,
@@ -58,7 +71,7 @@ describe('Carrito — armar un pedido anticipado', () => {
   });
 
   it('muestra un estado vacío cuando no hay platillos disponibles', () => {
-    render(<Carrito items={[agotado]} onConfirmar={vi.fn()} />);
+    mostrar([agotado]);
 
     expect(screen.getByText(/No hay platillos disponibles/)).toBeTruthy();
   });

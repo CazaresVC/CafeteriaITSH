@@ -80,6 +80,16 @@ usando `PATCH /usuarios/:id`, que ya existe.
 - Acciones destructivas (deshabilitar usuario, quitar del menú) con confirmación.
 - Áreas táctiles ≥ 44 px en caja y cocina.
 
+## Clarifications
+
+### Session 2026-10-31
+
+- Q: ¿Dónde viven los componentes reutilizables? → A: En `components/ui/`, con Tailwind puro.
+- Q: ¿La vista Entregas requiere backend nuevo? → A: No; usa `GET /pedidos?estado=Listo` y `PATCH /pedidos/:id/estado` existentes.
+- Q: ¿La edición de usuario requiere backend nuevo? → A: No; usa `PATCH /usuarios/:id` existente.
+- Q: ¿Se rediseña la navegación? → A: No; se conserva `LayoutModulo` y las tabs, solo se pule lo visual.
+- Q: ¿Se pueden romper los tests existentes? → A: No; se conservan los textos y nodos asertados y los 26 tests siguen verdes.
+
 ## Requirements *(mandatory)*
 
 ### Functional Requirements

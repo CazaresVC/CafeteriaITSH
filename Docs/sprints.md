@@ -2,7 +2,7 @@
 
 **Creado**: 2026-10-11
 **Spec maestra**: `specs/001-advance-order-system/spec.md`
-**Duración**: 5 sprints × 2 semanas (10 semanas)
+**Duración**: 5 sprints × 2 semanas (10 semanas) + QA transversal
 
 Cada sprint es una feature independiente de speckit con su propio directorio
 `specs/00N-*/`. La spec maestra (001) define el producto completo; cada spec de
@@ -27,8 +27,25 @@ sprint es un subconjunto trazable de ella (historias, FRs y criterios).
 | 3 | 5–6 (2026-11-10 → 11-23) | `specs/004-advance-orders-payment/` | US2 | Flujo alumno: menú → pedido → pago anticipado |
 | 4 | 7–8 (2026-11-24 → 12-07) | `specs/005-counter-kitchen/` | US3 + US4 | Cajero captura mostrador; cocina procesa en pantalla |
 | 5 | 9–10 (2026-12-08 → 12-21) | `specs/006-order-tracking-notifications/` | US5 + pulido | Notificación de pedido listo + demo completa |
+| 6 | Transversal | `specs/010-quality-assurance/` | Verificación de 001 | CI, integración MySQL y trazabilidad |
 
-> Las fechas son estimadas; se ajustan al calendario real del plantel.
+> Las fechas son estimadas; se ajustan al calendario real del plantel. Los refinamientos
+> posteriores al MVP viven en `specs/007-ui-redesign/`, `specs/008-republicar-menu/` y
+> `specs/009-pulido-visual-roles/`; el Sprint 6 los verifica junto con el resto del sistema.
+
+### Refinamiento 007 — Tokens y rediseño por rol (CFITSH-25…29)
+
+**Feature**: `specs/007-ui-redesign/` | **Fecha**: 2026-11-02
+
+**Entra**: tokens de `Docs/DESIGN.md`; navegación drawer móvil + panel fijo + bottom bar;
+rediseño de caja (flujo por pasos), cocina (KDS agrupado), cliente (menú, carrito persistente,
+pago, mis pedidos) y administración (landing con conteos); pruebas actualizadas.
+
+**No entra**: endpoints, migraciones, dependencias npm, historial de ventas, configuración,
+pagos con tarjeta/transferencia, captura de hora de recolección ni métricas de negocio.
+
+**Criterios**: `typecheck`, `test` (11 archivos/35 pruebas), `lint` y `build` en verde; mismas
+rutas y reglas de negocio; carrito persistente validado contra el menú vigente.
 
 ---
 
@@ -161,6 +178,38 @@ puntos de lealtad).
 - Flujo completo demostrable: menú → selección → pedido → pago → cocina →
   preparación → listo → notificación → recogida.
 - Pruebas de estados, pagos y permisos en verde (Vitest).
+
+---
+
+## Sprint 6 — Aseguramiento de la calidad (transversal)
+
+**Feature**: `specs/010-quality-assurance/`
+
+**Objetivo**: cerrar la brecha de QA del MVP: verificación automática en cada cambio, pruebas
+de integración contra MySQL real, trazabilidad de requisitos y evidencia de aceptación manual,
+sin añadir dependencias npm (§22).
+
+**Entra**:
+- CI en GitHub Actions: backend (`test`, `typecheck`, `build`), frontend (`lint`, `typecheck`,
+  `test`, `build`), integración con MySQL 8 y auditoría de dependencias de producción.
+- Dependabot para npm y GitHub Actions; plantilla de pull request con checklist de QA.
+- Suite de integración: migraciones idempotentes, flujo completo y permisos/propiedad.
+- Inventario de pruebas, matriz de trazabilidad FR/SC, bitácora de defectos y checklist de
+  accesibilidad.
+- Humo de rendimiento con `fetch` y `performance.now()` (sin dependencias).
+- Cierre documental del roadmap y de las tareas abiertas del sprint 007.
+
+**No entra**:
+- Métrica automática de cobertura, E2E de navegador, pruebas de carga con concurrencia real y
+  escaneo de seguridad con herramientas externas (requieren dependencias nuevas o servicios).
+
+**Criterios de aceptación**:
+- Todo PR a `main` ejecuta CI y no se fusiona con el workflow en rojo.
+- La suite de integración pasa en CI contra MySQL 8 y cubre migraciones, flujo y permisos.
+- Cero vulnerabilidades high/critical en dependencias de producción.
+- Los 40 FR y 9 SC de la spec 001 están mapeados en `traceability.md`.
+- El checklist de accesibilidad y el humo de rendimiento tienen evidencia registrada.
+- `package.json` y `package-lock.json` no incorporan dependencias nuevas.
 
 ---
 

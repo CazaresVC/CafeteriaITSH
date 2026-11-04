@@ -34,7 +34,7 @@ export const crearOperativoSchema = z.object({
   correo: correoSchema,
   password: passwordSchema,
   rol: z.enum(['cajero', 'cocinero'], {
-    errorMap: () => ({ message: 'El rol debe ser cajero o cocinero' }),
+    message: 'El rol debe ser cajero o cocinero',
   }),
 });
 

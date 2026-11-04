@@ -12,7 +12,7 @@ export function StatCard({ valor, etiqueta, icono, className }: Props) {
   return (
     <div
       className={cn(
-        'flex items-center gap-4 rounded-2xl border border-outline-variant/70 bg-white p-5 shadow-sm',
+        'flex items-center gap-4 rounded-xl border border-outline-variant/70 bg-surface-container-lowest p-5 shadow-sm',
         className,
       )}
     >

@@ -61,8 +61,19 @@ export function Login() {
           <form className="space-y-4" onSubmit={enviar} noValidate>
             <div className="space-y-1">
               <Label htmlFor="correo">Correo electrónico</Label>
-              <Input id="correo" type="email" autoComplete="username" {...register('correo')} />
-              {errors.correo && <p className="text-sm text-error">{errors.correo.message}</p>}
+              <Input
+                id="correo"
+                type="email"
+                autoComplete="username"
+                aria-invalid={errors.correo ? true : undefined}
+                aria-describedby={errors.correo ? 'correo-error' : undefined}
+                {...register('correo')}
+              />
+              {errors.correo && (
+                <p id="correo-error" className="text-sm text-error" role="alert">
+                  {errors.correo.message}
+                </p>
+              )}
             </div>
             <div className="space-y-1">
               <Label htmlFor="password">Contraseña</Label>
@@ -70,10 +81,14 @@ export function Login() {
                 id="password"
                 type="password"
                 autoComplete="current-password"
+                aria-invalid={errors.password ? true : undefined}
+                aria-describedby={errors.password ? 'password-error' : undefined}
                 {...register('password')}
               />
               {errors.password && (
-                <p className="text-sm text-error">{errors.password.message}</p>
+                <p id="password-error" className="text-sm text-error" role="alert">
+                  {errors.password.message}
+                </p>
               )}
             </div>
             {error && (
@@ -90,7 +105,10 @@ export function Login() {
           </form>
           <p className="mt-4 text-center text-sm text-on-surface-variant">
             ¿No tienes cuenta?{' '}
-            <Link className="font-semibold text-primary hover:underline" to="/registro">
+            <Link
+              className="rounded-sm font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+              to="/registro"
+            >
               Regístrate
             </Link>
           </p>

@@ -1,4 +1,4 @@
-# Data Model: Tokens de diseño (DESIGN.md) en el frontend
+# Data Model: Tokens y rediseño de navegación/pantallas por rol
 
 **Feature**: `007-ui-redesign` | **Date**: 2026-10-14
 
@@ -24,6 +24,12 @@ Los únicos valores definidos son **tokens de diseño** (no datos de aplicación
 
 **Nota**: los valores exactos de cada token no se duplican aquí; la fuente de verdad es
 `Docs/DESIGN.md` (front-matter `colors`, `typography`, `rounded`, `spacing`).
+
+## Carrito del cliente (estado de UI, no entidad de backend)
+
+La extensión guarda sólo cantidades por `platilloId` en `localStorage`
+(`cafe-itsh-carrito`) mediante `CarritoProvider`. No es una entidad persistida en MySQL ni
+cambia contratos: el backend sigue calculando disponibilidad, totales y `fechaRecoleccion`.
 
 ## Contratos de API
 

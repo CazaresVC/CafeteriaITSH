@@ -1,4 +1,4 @@
-# Quickstart: Tokens de diseño (DESIGN.md) en el frontend
+# Quickstart: Tokens de diseño y rediseño de navegación/pantallas por rol
 
 Guía de validación de la funcionalidad. No incluye la implementación; referencia `plan.md`,
 `research.md` y `Docs/DESIGN.md`.
@@ -42,6 +42,22 @@ npm.cmd run dev      # Vite en 5173 (proxya /api → :3000)
 8. **Responsividad y táctil** — En móvil (ancho reducido), verificar que caja y cocina
    conservan áreas táctiles ≥ 44 px y alto contraste. FR-006.
 
+## Escenarios de la extensión CFITSH-25…29
+
+9. **Navegación** - Con cada rol, comprobar sidebar fijo en escritorio y hamburguesa/drawer en
+   móvil; caja y cliente muestran bottom bar. El enlace activo distingue `/caja?paso=captura`
+   de `/caja`. FR-009/SC-006.
+10. **Caja** - Capturar un pedido con búsqueda/chips/stepper, continuar a cobro y usar
+    "Registrar y cobrar". Simular cobro fallido: el folio queda `Pendiente` con reintento y
+    cancelación sin recapturar. FR-010/SC-007.
+11. **Cocina** - Ver pedidos agrupados por estado, folio grande, espera, contadores y polling;
+    avanzar un pedido y comprobar que desaparece del grupo anterior. FR-011.
+12. **Cliente** - Agregar cantidades, recargar `/menu` y comprobar persistencia del carrito;
+    quitar del menú un platillo y verificar que se descarta. Confirmar pedido y revisar
+    `fechaRecoleccion` en `/mis-pedidos` y en el detalle. FR-012/013/SC-008.
+13. **Administración** - Entrar a `/admin` y ver conteos + accesos; buscar/filtrar platillos y
+    abrir el panel lateral de usuarios. FR-014.
+
 ## Verificación automatizada
 
 ```bash
@@ -52,16 +68,17 @@ npm.cmd run lint        # eslint
 npm.cmd run build       # tsc --noEmit && vite build
 ```
 
-Criterios en verde: `spec.md` → Success Criteria SC-001…SC-005.
+Criterios en verde: `spec.md` → Success Criteria SC-001…SC-009.
 
 ## Comprobación de "no regresión"
 
-- `git diff --stat` **no** debe mostrar cambios en `backend/`, `database/` ni en
-  `frontend/src/lib/` ni `frontend/src/router.tsx`. SC-004.
+- `git diff --stat` **no** debe mostrar cambios en `backend/` ni `database/`. SC-004.
+- La extensión sí modifica `frontend/src/lib/carrito.tsx` y `frontend/src/router.tsx` (sólo
+  `/admin` → Inicio); las rutas existentes y `ProtectedRoute` no cambian.
 - `frontend/package.json` **no** debe ganar dependencias. SC-005.
 
 ## Fuera de alcance (no validar aquí)
 
-Navegación drawer/bottom bar, rediseño de pantallas, nuevas rutas, historial de ventas,
-métodos de pago con tarjeta/transferencia, descuentos, imágenes de platillo, métricas de
-admin y notificaciones push. Requieren una spec y aprobación (§27).
+Historial de ventas, configuración, métodos de pago con tarjeta/transferencia, descuentos,
+captura de hora de recolección, imágenes de platillo, métricas de negocio y notificaciones
+push. Requieren una spec y aprobación (§27).

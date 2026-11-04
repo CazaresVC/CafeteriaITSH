@@ -92,6 +92,16 @@ estado previo puede cancelarse; las transiciones inválidas se rechazan.
 - Dos operadores actualizando el mismo pedido al mismo tiempo.
 - Pedido cancelado que ya estaba "En preparación".
 
+## Clarifications
+
+### Session 2026-10-31
+
+- Q: ¿Dónde viven las transiciones válidas? → A: En la tabla `transicion_estado` y se validan siempre en el servidor.
+- Q: ¿Cómo se evita un doble cambio concurrente? → A: Con una transacción y `SELECT ... FOR UPDATE`, registrando el cambio en el historial.
+- Q: ¿Cómo se ordena la fila de cocina? → A: Por llegada (`creado_en ASC, id ASC`).
+- Q: ¿Cómo se cobra un pedido de mostrador? → A: Solo en efectivo por el cajero, pasando de `Pendiente` a `Pagado`.
+- Q: ¿Se puede cancelar un pedido? → A: Desde cualquier estado previo a la entrega; los estados terminales no cambian.
+
 ## Requirements *(mandatory)*
 
 ### Functional Requirements

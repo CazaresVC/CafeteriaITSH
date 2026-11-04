@@ -18,7 +18,7 @@ export const pedidoInputSchema = z.object({
 
 export const pagoInputSchema = z.object({
   metodo: z.literal('en_linea', {
-    errorMap: () => ({ message: 'El método de pago debe ser en línea' }),
+    message: 'El método de pago debe ser en línea',
   }),
   tokenPago: z.string().trim().max(100, 'El token de pago es demasiado largo').optional(),
 });
@@ -45,13 +45,13 @@ export const crearMostradorSchema = z.object({
 
 export const cobroSchema = z.object({
   metodo: z.literal('efectivo', {
-    errorMap: () => ({ message: 'El método de cobro debe ser efectivo' }),
+    message: 'El método de cobro debe ser efectivo',
   }),
 });
 
 export const cambioEstadoSchema = z.object({
   estado: z.enum(ESTADOS_PEDIDO, {
-    errorMap: () => ({ message: 'Estado de pedido inválido' }),
+    message: 'Estado de pedido inválido',
   }),
 });
 
@@ -63,7 +63,7 @@ const estadoFiltroSchema = z.union([
 export const pedidoFiltroSchema = z.object({
   estado: estadoFiltroSchema.optional(),
   origen: z.enum(['anticipado', 'mostrador'], {
-    errorMap: () => ({ message: 'Origen de pedido inválido' }),
+    message: 'Origen de pedido inválido',
   }).optional(),
 });
 

@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from 'react-router-dom';
 import { AuthProvider } from './lib/auth';
+import { CarritoProvider } from './lib/carrito';
 import { router } from './router';
 
 const queryClient = new QueryClient({
@@ -16,7 +17,9 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <RouterProvider router={router} />
+        <CarritoProvider>
+          <RouterProvider router={router} />
+        </CarritoProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

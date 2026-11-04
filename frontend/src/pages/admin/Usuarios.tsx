@@ -5,10 +5,12 @@ import { ETIQUETA_ROL, type Rol, type Usuario } from '../../lib/roles';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import { Select } from '../../components/ui/select';
 import { Badge } from '../../components/ui/badge';
 import { EmptyState } from '../../components/ui/empty-state';
 import { PageHeader } from '../../components/ui/page-header';
 import { ConfirmDialog } from '../../components/ui/confirm-dialog';
+import { PanelLateral } from '../../components/ui/panel-lateral';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { IconoAgregar, IconoCheck, IconoDesactivar, IconoEditar, IconoUsuarios } from '../../components/iconos';
 
@@ -34,6 +36,7 @@ export function Usuarios() {
   const [editando, setEditando] = useState<Usuario | null>(null);
   const [aDeshabilitar, setADeshabilitar] = useState<Usuario | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [panelAbierto, setPanelAbierto] = useState(false);
 
   const { data: usuarios, isLoading } = useQuery({
     queryKey: ['usuarios'],
@@ -46,6 +49,7 @@ export function Usuarios() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['usuarios'] });
       setFormulario(FORMULARIO_INICIAL);
+      setPanelAbierto(false);
       setError(null);
     },
     onError: (e) => setError(mensajeDeError(e)),
@@ -58,6 +62,7 @@ export function Usuarios() {
       await queryClient.invalidateQueries({ queryKey: ['usuarios'] });
       setEditando(null);
       setFormulario(FORMULARIO_INICIAL);
+      setPanelAbierto(false);
       setError(null);
     },
     onError: (e) => setError(mensajeDeError(e)),
@@ -90,6 +95,13 @@ export function Usuarios() {
     }
   }
 
+  function comenzarNuevo() {
+    setEditando(null);
+    setFormulario(FORMULARIO_INICIAL);
+    setError(null);
+    setPanelAbierto(true);
+  }
+
   function comenzarEdicion(usuario: Usuario) {
     setEditando(usuario);
     setError(null);
@@ -99,12 +111,14 @@ export function Usuarios() {
       password: '',
       rol: usuario.rol === 'cocinero' ? 'cocinero' : 'cajero',
     });
+    setPanelAbierto(true);
   }
 
   function cancelarEdicion() {
     setEditando(null);
     setFormulario(FORMULARIO_INICIAL);
     setError(null);
+    setPanelAbierto(false);
   }
 
   return (
@@ -113,79 +127,81 @@ export function Usuarios() {
         icono={<IconoUsuarios className="h-5 w-5" />}
         titulo="Usuarios operativos"
         descripcion="Da de alta cajeros y cocineros, edita sus datos o deshabilita su acceso."
+        acciones={
+          <Button onClick={comenzarNuevo} className="min-h-11">
+            <IconoAgregar className="h-4 w-4" />
+            Nuevo usuario
+          </Button>
+        }
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{editando ? `Editar a ${editando.nombre}` : 'Nuevo usuario operativo'}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form className="grid gap-4 sm:grid-cols-2" onSubmit={enviar}>
+      <PanelLateral
+        abierto={panelAbierto}
+        onCerrar={cancelarEdicion}
+        titulo={editando ? `Editar a ${editando.nombre}` : 'Nuevo usuario operativo'}
+      >
+        <form className="grid gap-4" onSubmit={enviar}>
+          <div className="space-y-1">
+            <Label htmlFor="nombre">Nombre</Label>
+            <Input
+              id="nombre"
+              value={formulario.nombre}
+              onChange={(e) => setFormulario({ ...formulario, nombre: e.target.value })}
+              required
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="correo">Correo</Label>
+            <Input
+              id="correo"
+              type="email"
+              value={formulario.correo}
+              onChange={(e) => setFormulario({ ...formulario, correo: e.target.value })}
+              required
+            />
+          </div>
+          {!editando && (
             <div className="space-y-1">
-              <Label htmlFor="nombre">Nombre</Label>
+              <Label htmlFor="password">Contraseña</Label>
               <Input
-                id="nombre"
-                value={formulario.nombre}
-                onChange={(e) => setFormulario({ ...formulario, nombre: e.target.value })}
+                id="password"
+                type="password"
+                value={formulario.password}
+                onChange={(e) => setFormulario({ ...formulario, password: e.target.value })}
+                minLength={8}
                 required
               />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="correo">Correo</Label>
-              <Input
-                id="correo"
-                type="email"
-                value={formulario.correo}
-                onChange={(e) => setFormulario({ ...formulario, correo: e.target.value })}
-                required
-              />
-            </div>
-            {!editando && (
-              <div className="space-y-1">
-                <Label htmlFor="password">Contraseña</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={formulario.password}
-                  onChange={(e) => setFormulario({ ...formulario, password: e.target.value })}
-                  minLength={8}
-                  required
-                />
-              </div>
-            )}
-            <div className="space-y-1">
-              <Label htmlFor="rol">Rol</Label>
-              <select
-                id="rol"
-                value={formulario.rol}
-                onChange={(e) =>
-                  setFormulario({ ...formulario, rol: e.target.value as RolOperativo })
-                }
-                className="w-full min-h-11 rounded-md border border-outline-variant bg-white px-3 py-2 text-sm text-on-surface shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
-              >
-                <option value="cajero">Cajero</option>
-                <option value="cocinero">Cocinero</option>
-              </select>
-            </div>
-            {error && (
-              <p className="text-sm text-error sm:col-span-2" role="alert">
-                {error}
-              </p>
-            )}
-            <div className="flex gap-2 sm:col-span-2">
-              <Button type="submit" disabled={enviando}>
-                {editando ? <IconoCheck className="h-4 w-4" /> : <IconoAgregar className="h-4 w-4" />}
-                {enviando ? 'Guardando…' : editando ? 'Guardar cambios' : 'Crear usuario'}
-              </Button>
-              {editando && (
-                <Button type="button" variante="secondary" onClick={cancelarEdicion}>
-                  Cancelar
-                </Button>
-              )}
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+          )}
+          <div className="space-y-1">
+            <Label htmlFor="rol">Rol</Label>
+            <Select
+              id="rol"
+              value={formulario.rol}
+              onChange={(e) =>
+                setFormulario({ ...formulario, rol: e.target.value as RolOperativo })
+              }
+            >
+              <option value="cajero">Cajero</option>
+              <option value="cocinero">Cocinero</option>
+            </Select>
+          </div>
+          {error && (
+            <p className="text-sm text-error" role="alert">
+              {error}
+            </p>
+          )}
+          <div className="flex gap-2">
+            <Button type="submit" disabled={enviando} className="flex-1">
+              {editando ? <IconoCheck className="h-4 w-4" /> : <IconoAgregar className="h-4 w-4" />}
+              {enviando ? 'Guardando…' : editando ? 'Guardar cambios' : 'Crear usuario'}
+            </Button>
+            <Button type="button" variante="secondary" onClick={cancelarEdicion}>
+              Cancelar
+            </Button>
+          </div>
+        </form>
+      </PanelLateral>
 
       <Card>
         <CardHeader>
@@ -193,7 +209,9 @@ export function Usuarios() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <p className="text-sm text-on-surface-variant">Cargando…</p>
+            <p className="text-sm text-on-surface-variant" role="status">
+              Cargando…
+            </p>
           ) : !usuarios || usuarios.length === 0 ? (
             <EmptyState
               titulo="Aún no hay usuarios operativos"
@@ -202,20 +220,32 @@ export function Usuarios() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
+                <caption className="sr-only">Usuarios operativos registrados</caption>
                 <thead>
                   <tr className="text-xs uppercase tracking-wide text-on-surface-variant">
-                    <th className="rounded-l-lg bg-surface-container px-4 py-3 font-semibold">
+                    <th scope="col" className="rounded-l-lg bg-surface-container px-4 py-3 font-semibold">
                       Nombre
                     </th>
-                    <th className="bg-surface-container px-4 py-3 font-semibold">Correo</th>
-                    <th className="bg-surface-container px-4 py-3 font-semibold">Rol</th>
-                    <th className="bg-surface-container px-4 py-3 font-semibold">Estado</th>
-                    <th className="rounded-r-lg bg-surface-container px-4 py-3" />
+                    <th scope="col" className="bg-surface-container px-4 py-3 font-semibold">
+                      Correo
+                    </th>
+                    <th scope="col" className="bg-surface-container px-4 py-3 font-semibold">
+                      Rol
+                    </th>
+                    <th scope="col" className="bg-surface-container px-4 py-3 font-semibold">
+                      Estado
+                    </th>
+                    <th scope="col" className="rounded-r-lg bg-surface-container px-4 py-3">
+                      <span className="sr-only">Acciones</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {usuarios.map((usuario) => (
-                    <tr key={usuario.id} className="border-b border-surface-container-high">
+                    <tr
+                      key={usuario.id}
+                      className="border-b border-surface-container-high odd:bg-surface-container-low/40"
+                    >
                       <td className="px-4 py-3 font-medium text-on-surface">{usuario.nombre}</td>
                       <td className="px-4 py-3 text-on-surface-variant">{usuario.correo}</td>
                       <td className="px-4 py-3">

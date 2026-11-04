@@ -89,6 +89,16 @@ cocina → preparación → listo → notificación → recogida) con las prueba
 - Estado del pedido actualizado entre dos consultas del cliente.
 - Reintento de notificación sin duplicar avisos al cliente.
 
+## Clarifications
+
+### Session 2026-10-31
+
+- Q: ¿Qué dispara la notificación? → A: Un evento de dominio `pedido.listo` emitido al pasar el pedido a `Listo`.
+- Q: ¿Está acoplada la notificación a la lógica de pedidos? → A: No; el servicio y el proveedor están separados y pedidos solo emite el evento.
+- Q: ¿Qué canal es el mínimo? → A: El aviso in-app persistido; el canal externo es opcional.
+- Q: ¿Qué ocurre si falla el canal? → A: El aviso queda `fallida` y el pedido intacto; el reintento es idempotente.
+- Q: ¿Cómo se actualiza la vista del cliente? → A: Polling cada 5 segundos con TanStack Query; sin WebSocket ni SSE.
+
 ## Requirements *(mandatory)*
 
 ### Functional Requirements

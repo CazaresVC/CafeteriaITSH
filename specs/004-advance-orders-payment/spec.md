@@ -74,6 +74,16 @@ se confirma, el pedido permanece "Pendiente".
 - Cancelación de un pedido anticipado antes de ser entregado.
 - Falla del servicio externo de pago: el estado del pedido no debe corromperse.
 
+## Clarifications
+
+### Session 2026-10-31
+
+- Q: ¿Cuándo se acepta un pedido anticipado? → A: Dentro de la ventana configurable y con al menos 10 minutos de anticipación; fuera de ella responde 422.
+- Q: ¿Quién calcula el total? → A: El backend, sumando las líneas con los precios congelados del menú.
+- Q: ¿Cuándo pasa el pedido a `Pagado`? → A: Solo tras una confirmación de pago aprobada.
+- Q: ¿Se integra una pasarela real? → A: No; se usa una pasarela simulada con interfaz sustituible y sin datos de tarjeta.
+- Q: ¿Qué pasa si se reintenta el pago? → A: Es idempotente por pedido; no duplica el pago ni la transición.
+
 ## Requirements *(mandatory)*
 
 ### Functional Requirements

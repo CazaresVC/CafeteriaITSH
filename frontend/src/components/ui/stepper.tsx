@@ -12,7 +12,7 @@ interface Props {
 }
 
 const BOTON =
-  'flex h-11 w-11 items-center justify-center rounded-lg border border-outline-variant bg-white text-lg font-semibold text-on-surface transition-colors hover:border-primary/60 hover:bg-primary-container/40 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-outline-variant disabled:hover:bg-white disabled:hover:text-on-surface';
+  'flex h-11 w-11 items-center justify-center rounded-lg border border-outline bg-surface-container-lowest text-lg font-semibold text-on-surface transition-colors hover:border-primary hover:bg-primary-container/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-outline disabled:hover:bg-surface-container-lowest disabled:hover:text-on-surface';
 
 export function Stepper({
   cantidad,
@@ -36,7 +36,10 @@ export function Stepper({
         −
       </button>
       <span
-        aria-label={`Cantidad de ${nombre}`}
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        aria-label={`Cantidad de ${nombre}: ${cantidad}`}
         data-testid={testid}
         className="w-9 text-center font-heading text-lg font-bold tabular-nums text-on-surface"
       >

@@ -1,13 +1,24 @@
+import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { usePedido, usePagarPedido } from '../../lib/pedidos';
+import { useCarrito } from '../../lib/carrito';
 import { mensajeDeError } from '../../lib/api';
 import { Button } from '../../components/ui/button';
 import { PageHeader } from '../../components/ui/page-header';
 import { EstadoBadge } from '../../components/EstadoBadge';
-import { IconoInfo, IconoPago } from '../../components/iconos';
+import { IconoInfo, IconoPago, IconoReloj } from '../../components/iconos';
 
 function formatearPrecio(precio: number): string {
   return `$${precio.toFixed(2)}`;
+}
+
+function formatearFechaHora(fecha: string): string {
+  const [soloFecha, hora] = fecha.split(' ');
+  const [anio, mes, dia] = (soloFecha ?? '').split('-');
+  if (!anio || !mes || !dia) {
+    return fecha;
+  }
+  return `${dia}/${mes}/${anio}${hora ? ` · ${hora.slice(0, 5)}` : ''}`;
 }
 
 interface EstadoNavegacion {
@@ -21,15 +32,25 @@ export function Pago() {
 
   const { data: pedido, isLoading, isError } = usePedido(pedidoId);
   const pagar = usePagarPedido();
+  const { limpiar } = useCarrito();
 
   const pedidoActual = pagar.data ?? pedido;
+
+  useEffect(() => {
+    if (pagar.isSuccess) {
+      limpiar();
+    }
+  }, [pagar.isSuccess, limpiar]);
 
   if (pedidoId === undefined) {
     return (
       <div className="space-y-4">
         <PageHeader titulo="Pago" />
         <p className="text-sm text-on-surface-variant">No hay un pedido para pagar.</p>
-        <Link to="/pedido" className="text-sm font-semibold text-primary hover:underline">
+        <Link
+          to="/pedido"
+          className="inline-flex min-h-11 items-center rounded-md text-sm font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+        >
           Armar un pedido
         </Link>
       </div>
@@ -43,7 +64,11 @@ export function Pago() {
         descripcion="Confirma el pago en línea para enviar tu pedido a cocina."
       />
 
-      {isLoading && <p className="text-sm text-on-surface-variant">Cargando pedido…</p>}
+      {isLoading && (
+        <p className="text-sm text-on-surface-variant" role="status">
+          Cargando pedido…
+        </p>
+      )}
 
       {isError && (
         <p className="text-sm text-error" role="alert">
@@ -53,7 +78,7 @@ export function Pago() {
 
       {pedidoActual && (
         <>
-          <div className="rounded-2xl border border-outline-variant/70 bg-white p-4 shadow-sm">
+          <div className="rounded-xl border border-outline-variant/70 bg-surface-container-lowest p-4 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-wide text-on-surface-variant">Folio</p>
@@ -74,6 +99,13 @@ export function Pago() {
                 </li>
               ))}
             </ul>
+
+            {pedidoActual.fechaRecoleccion && (
+              <p className="mt-3 flex items-center gap-2 rounded-lg bg-surface-container p-3 text-sm text-on-surface-variant">
+                <IconoReloj className="h-4 w-4 shrink-0" />
+                Recoger: {formatearFechaHora(pedidoActual.fechaRecoleccion)}
+              </p>
+            )}
 
             <div className="mt-3 flex items-center justify-between border-t border-surface-container-high pt-3">
               <span className="text-sm font-medium text-on-surface-variant">Total</span>

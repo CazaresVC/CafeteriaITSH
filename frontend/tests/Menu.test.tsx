@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { Menu } from '../src/pages/clientes/Menu';
+import { CarritoProvider } from '../src/lib/carrito';
 import type { MenuItem } from '../src/lib/menu';
 
 const { mockUseMenu } = vi.hoisted(() => ({ mockUseMenu: vi.fn() }));
@@ -35,12 +37,19 @@ const agotado: MenuItem = {
 
 function mostrar(items: MenuItem[]) {
   mockUseMenu.mockReturnValue({ data: items, isLoading: false, isError: false });
-  return render(<Menu />);
+  return render(
+    <MemoryRouter>
+      <CarritoProvider>
+        <Menu />
+      </CarritoProvider>
+    </MemoryRouter>,
+  );
 }
 
 describe('Consulta del menú del día (cliente)', () => {
   beforeEach(() => {
     mockUseMenu.mockReset();
+    window.localStorage.clear();
   });
 
   it('muestra platillos con precio y especiales', () => {

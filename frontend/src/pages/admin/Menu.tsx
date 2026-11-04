@@ -12,6 +12,7 @@ import { mensajeDeError } from '../../lib/api';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import { Select } from '../../components/ui/select';
 import { Badge } from '../../components/ui/badge';
 import { EmptyState } from '../../components/ui/empty-state';
 import { PageHeader } from '../../components/ui/page-header';
@@ -31,8 +32,8 @@ function FilaMenu({ item }: { item: MenuItem }) {
   const [precio, setPrecio] = useState(String(item.precio));
 
   return (
-    <tr className="border-t border-surface-container-high align-middle">
-      <td className="py-3">
+    <tr className="border-b border-surface-container-high align-middle odd:bg-surface-container-low/40">
+      <td className="px-4 py-3">
         <div className="flex items-center gap-2">
           <span className="font-medium text-on-surface">{item.nombre}</span>
           {item.especial && <Badge tono="especial">Especial</Badge>}
@@ -43,6 +44,7 @@ function FilaMenu({ item }: { item: MenuItem }) {
           <Input
             className="w-24"
             type="number"
+            inputMode="decimal"
             min={0}
             step="0.01"
             value={precio}
@@ -60,9 +62,10 @@ function FilaMenu({ item }: { item: MenuItem }) {
         </div>
       </td>
       <td className="px-4 py-3">
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex min-h-11 items-center gap-2 text-sm">
           <input
             type="checkbox"
+            className="accent-primary"
             checked={item.disponible}
             onChange={(e) =>
               actualizar.mutate({ id: item.id, datos: { disponible: e.target.checked } })
@@ -72,9 +75,10 @@ function FilaMenu({ item }: { item: MenuItem }) {
         </label>
       </td>
       <td className="px-4 py-3">
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex min-h-11 items-center gap-2 text-sm">
           <input
             type="checkbox"
+            className="accent-primary"
             checked={item.especial}
             onChange={(e) => actualizar.mutate({ id: item.id, datos: { especial: e.target.checked } })}
           />
@@ -206,12 +210,11 @@ export function Menu() {
           <form className="grid items-end gap-4 sm:grid-cols-4" onSubmit={enviar}>
             <div className="space-y-1 sm:col-span-2">
               <Label htmlFor="menu-platillo">Platillo</Label>
-              <select
+              <Select
                 id="menu-platillo"
                 value={platilloId}
                 onChange={(e) => setPlatilloId(e.target.value)}
                 required
-                className="w-full rounded-md border border-outline-variant bg-white px-3 py-2 text-sm text-on-surface shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
               >
                 <option value="">Selecciona un platillo…</option>
                 {(platillos ?? []).map((platillo) => (
@@ -219,13 +222,14 @@ export function Menu() {
                     {platillo.nombre}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
             <div className="space-y-1">
               <Label htmlFor="menu-precio">Precio</Label>
               <Input
                 id="menu-precio"
                 type="number"
+                inputMode="decimal"
                 min={0}
                 step="0.01"
                 value={precio}
@@ -234,9 +238,10 @@ export function Menu() {
               />
             </div>
             <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 text-sm">
+              <label className="flex min-h-11 items-center gap-2 text-sm">
                 <input
                   type="checkbox"
+                  className="accent-primary"
                   checked={especial}
                   onChange={(e) => setEspecial(e.target.checked)}
                 />
@@ -257,7 +262,9 @@ export function Menu() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <p className="text-sm text-on-surface-variant">Cargando…</p>
+            <p className="text-sm text-on-surface-variant" role="status">
+              Cargando…
+            </p>
           ) : !items || items.length === 0 ? (
             <EmptyState
               titulo="No hay platillos publicados para esta fecha"
@@ -266,15 +273,24 @@ export function Menu() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
+                <caption className="sr-only">Platillos publicados para la fecha seleccionada</caption>
                 <thead>
                   <tr className="text-xs uppercase tracking-wide text-on-surface-variant">
-                    <th className="rounded-l-lg bg-surface-container px-4 py-3 font-semibold">
+                    <th scope="col" className="rounded-l-lg bg-surface-container px-4 py-3 font-semibold">
                       Nombre
                     </th>
-                    <th className="bg-surface-container px-4 py-3 font-semibold">Precio</th>
-                    <th className="bg-surface-container px-4 py-3 font-semibold">Disponible</th>
-                    <th className="bg-surface-container px-4 py-3 font-semibold">Especial</th>
-                    <th className="rounded-r-lg bg-surface-container px-4 py-3" />
+                    <th scope="col" className="bg-surface-container px-4 py-3 font-semibold">
+                      Precio
+                    </th>
+                    <th scope="col" className="bg-surface-container px-4 py-3 font-semibold">
+                      Disponible
+                    </th>
+                    <th scope="col" className="bg-surface-container px-4 py-3 font-semibold">
+                      Especial
+                    </th>
+                    <th scope="col" className="rounded-r-lg bg-surface-container px-4 py-3">
+                      <span className="sr-only">Acciones</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>

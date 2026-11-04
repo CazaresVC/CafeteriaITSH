@@ -13,7 +13,11 @@ export function ProtectedRoute({ children, roles }: Props) {
   const ubicacion = useLocation();
 
   if (cargando) {
-    return <p className="p-8 text-center text-on-surface-variant">Cargando…</p>;
+    return (
+      <p className="p-8 text-center text-on-surface-variant" role="status">
+        Cargando…
+      </p>
+    );
   }
 
   if (!usuario) {

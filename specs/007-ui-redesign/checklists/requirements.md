@@ -1,4 +1,4 @@
-# Checklist de Calidad del Spec: Tokens de diseño (DESIGN.md) en el frontend
+# Specification Quality Checklist: Tokens de diseño (DESIGN.md) en el frontend
 
 **Propósito**: Validar la completitud y calidad de la especificación antes de continuar con la planificación
 **Creado**: 2026-10-14
@@ -31,7 +31,8 @@
 
 ## Notas
 
-- Alcance acotado a tokens (pulido de UI del Sprint 5); navegación y rediseño de pantallas quedan fuera y se marcan en `spec.md` → Supuestos.
+- Alcance acotado a tokens (pulido de UI del Sprint 5); navegación y rediseño de pantallas
+  quedan fuera y se marcan en `spec.md` → Assumptions.
 - La fuente de tokens es `Docs/DESIGN.md`; no se redefine la identidad visual.
 - Los elementos marcados como incompletos requieren actualizaciones del spec antes de `/speckit-clarify` o `/speckit-plan`.
 

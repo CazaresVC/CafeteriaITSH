@@ -63,7 +63,11 @@ export function Entregas() {
         </p>
       )}
 
-      {isLoading && <p className="text-sm text-on-surface-variant">Cargando pedidos…</p>}
+      {isLoading && (
+        <p className="text-sm text-on-surface-variant" role="status">
+          Cargando pedidos…
+        </p>
+      )}
 
       {isError && (
         <p className="text-sm text-error" role="alert">
@@ -83,7 +87,7 @@ export function Entregas() {
           {lista.map((pedido) => (
             <li
               key={pedido.id}
-              className="flex flex-col gap-3 rounded-2xl border border-status-ready/30 bg-white p-4 shadow-sm"
+              className="flex flex-col gap-3 rounded-xl border border-status-ready/30 bg-surface-container-lowest p-4 shadow-sm"
             >
               <div className="flex items-start justify-between gap-2">
                 <div>

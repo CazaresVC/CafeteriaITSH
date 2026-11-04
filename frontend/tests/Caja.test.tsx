@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import { Caja } from '../src/pages/caja/Caja';
 import type { MenuItem } from '../src/lib/menu';
@@ -7,15 +8,19 @@ import type { Pedido } from '../src/lib/pedidos';
 
 const mocks = vi.hoisted(() => ({
   useMenu: vi.fn(),
+  usePedidos: vi.fn(),
   useCrearMostrador: vi.fn(),
   useCobrarPedido: vi.fn(),
+  useCambiarEstado: vi.fn(),
 }));
 
 vi.mock('../src/lib/menu', () => ({ useMenu: mocks.useMenu }));
 vi.mock('../src/lib/api', () => ({ mensajeDeError: vi.fn(() => 'boom') }));
 vi.mock('../src/lib/pedidos', () => ({
+  usePedidos: mocks.usePedidos,
   useCrearMostrador: mocks.useCrearMostrador,
   useCobrarPedido: mocks.useCobrarPedido,
+  useCambiarEstado: mocks.useCambiarEstado,
 }));
 
 const item: MenuItem = {
@@ -48,10 +53,13 @@ let cobrarMutate: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   mocks.useMenu.mockReset();
+  mocks.usePedidos.mockReset();
   mocks.useCrearMostrador.mockReset();
   mocks.useCobrarPedido.mockReset();
+  mocks.useCambiarEstado.mockReset();
 
   mocks.useMenu.mockReturnValue({ data: [item], isLoading: false, isError: false });
+  mocks.usePedidos.mockReturnValue({ data: [], isLoading: false, isError: false });
   crearMutate = vi.fn((_datos: unknown, opciones: { onSuccess: (p: Pedido) => void }) =>
     opciones.onSuccess(pedidoPendiente),
   );
@@ -71,30 +79,47 @@ beforeEach(() => {
     data: undefined,
     reset: vi.fn(),
   });
+  mocks.useCambiarEstado.mockReturnValue({
+    mutate: vi.fn(),
+    isPending: false,
+    isError: false,
+    reset: vi.fn(),
+  });
 });
+
+function mostrar() {
+  return render(
+    <MemoryRouter>
+      <Caja />
+    </MemoryRouter>,
+  );
+}
 
 describe('Caja — captura y cobro de mostrador', () => {
   it('registra un pedido y lo cobra en efectivo', async () => {
     const user = userEvent.setup();
-    render(<Caja />);
+    mostrar();
 
+    await user.click(screen.getByRole('button', { name: 'Nuevo pedido' }));
     await user.click(screen.getByRole('button', { name: 'Agregar Gordita de frijol' }));
-    await user.click(screen.getByRole('button', { name: 'Registrar pedido' }));
+    await user.click(screen.getByRole('button', { name: 'Ver cobro' }));
+
+    expect(screen.getByText('Cobro')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Registrar y cobrar' }));
 
     expect(crearMutate).toHaveBeenCalledWith(
       { items: [{ menu_dia_id: 1, cantidad: 1 }], cliente_nombre: undefined },
       expect.any(Object),
     );
 
-    expect(screen.getByText('ITS-20261013-0007')).toBeTruthy();
-    await user.click(screen.getByRole('button', { name: 'Cobrar en efectivo' }));
+    expect(await screen.findByText('ITS-20261013-0007')).toBeTruthy();
     expect(cobrarMutate).toHaveBeenCalledWith(7);
   });
 
-  it('muestra el formulario de captura al inicio', () => {
-    render(<Caja />);
+  it('muestra el panel de inicio al entrar a caja', () => {
+    mostrar();
 
-    expect(screen.getByRole('button', { name: 'Registrar pedido' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Cobrar en efectivo' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Nuevo pedido' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Registrar y cobrar' })).toBeNull();
   });
 });

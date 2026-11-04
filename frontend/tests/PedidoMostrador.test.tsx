@@ -30,9 +30,9 @@ const agotado: MenuItem = {
 
 describe('PedidoMostrador — registrar pedido de caja', () => {
   it('selecciona items, acumula el total y envía el menú_dia_id', async () => {
-    const onRegistrar = vi.fn();
+    const onContinuar = vi.fn();
     const user = userEvent.setup();
-    render(<PedidoMostrador items={[disponible, agotado]} onRegistrar={onRegistrar} />);
+    render(<PedidoMostrador items={[disponible, agotado]} onContinuar={onContinuar} />);
 
     expect(screen.getByTestId('total-mostrador').textContent).toBe('$0.00');
     expect(screen.queryByText('Café de olla')).toBeNull();
@@ -43,24 +43,28 @@ describe('PedidoMostrador — registrar pedido de caja', () => {
     expect(screen.getByTestId('total-mostrador').textContent).toBe('$60.00');
 
     await user.type(screen.getByLabelText('Cliente (opcional)'), 'Juan');
-    await user.click(screen.getByRole('button', { name: 'Registrar pedido' }));
+    await user.click(screen.getByRole('button', { name: 'Ver cobro' }));
 
-    expect(onRegistrar).toHaveBeenCalledWith({
-      items: [{ menu_dia_id: 1, cantidad: 2 }],
-      cliente_nombre: 'Juan',
+    expect(onContinuar).toHaveBeenCalledWith({
+      datos: {
+        items: [{ menu_dia_id: 1, cantidad: 2 }],
+        cliente_nombre: 'Juan',
+      },
+      lineas: [
+        { id: 1, nombre: 'Gordita de frijol', cantidad: 2, precio: 30, subtotal: 60 },
+      ],
+      total: 60,
     });
   });
 
-  it('deshabilita registrar mientras no hay selección', () => {
-    render(<PedidoMostrador items={[disponible]} onRegistrar={vi.fn()} />);
+  it('deshabilita continuar mientras no hay selección', () => {
+    render(<PedidoMostrador items={[disponible]} onContinuar={vi.fn()} />);
 
-    expect(screen.getByRole('button', { name: 'Registrar pedido' }).hasAttribute('disabled')).toBe(
-      true,
-    );
+    expect(screen.getByRole('button', { name: 'Ver cobro' }).hasAttribute('disabled')).toBe(true);
   });
 
   it('muestra un estado vacío cuando no hay platillos disponibles', () => {
-    render(<PedidoMostrador items={[agotado]} onRegistrar={vi.fn()} />);
+    render(<PedidoMostrador items={[agotado]} onContinuar={vi.fn()} />);
 
     expect(screen.getByText(/No hay platillos disponibles/)).toBeTruthy();
   });

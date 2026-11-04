@@ -11,7 +11,7 @@ function tieneHastaDosDecimales(valor: number): boolean {
 }
 
 export const precioSchema = z
-  .number({ invalid_type_error: 'El precio debe ser numérico' })
+  .number({ error: 'El precio debe ser numérico' })
   .nonnegative('El precio no puede ser negativo')
   .max(99999999.99, 'El precio es demasiado alto')
   .refine(tieneHastaDosDecimales, 'El precio admite como máximo 2 decimales');

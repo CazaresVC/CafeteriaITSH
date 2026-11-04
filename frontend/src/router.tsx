@@ -4,6 +4,7 @@ import { Registro } from './pages/Registro';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Inicio } from './components/Inicio';
 import { AdminLayout } from './pages/admin/AdminLayout';
+import { Inicio as AdminInicio } from './pages/admin/Inicio';
 import { Usuarios } from './pages/admin/Usuarios';
 import { Platillos } from './pages/admin/Platillos';
 import { Menu as AdminMenu } from './pages/admin/Menu';
@@ -30,7 +31,7 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <Navigate to="/admin/usuarios" replace /> },
+      { index: true, element: <AdminInicio /> },
       { path: 'usuarios', element: <Usuarios /> },
       { path: 'platillos', element: <Platillos /> },
       { path: 'menu', element: <AdminMenu /> },

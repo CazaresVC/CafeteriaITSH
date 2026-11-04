@@ -1,53 +1,120 @@
-import { useState, type FormEvent } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import type { MenuItem } from '../../lib/menu';
-import type { ItemMostradorInput } from '../../lib/pedidos';
+import type { CrearMostradorInput, ItemMostradorInput } from '../../lib/pedidos';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Stepper } from '../ui/stepper';
 import { Badge } from '../ui/badge';
 import { EmptyState } from '../ui/empty-state';
+import { Buscador } from '../ui/buscador';
+import { ChipsCategoria } from '../ui/chips-categoria';
 import { IconoAgregar } from '../iconos';
 
 function formatearPrecio(precio: number): string {
   return `$${precio.toFixed(2)}`;
 }
 
-interface Props {
-  items: MenuItem[];
-  onRegistrar: (datos: { items: ItemMostradorInput[]; cliente_nombre?: string }) => void;
-  enviando?: boolean;
-  error?: string | null;
+function normalizar(texto: string): string {
+  return texto
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 }
 
-export function PedidoMostrador({ items, onRegistrar, enviando = false, error = null }: Props) {
-  const [cantidades, setCantidades] = useState<Record<number, number>>({});
-  const [clienteNombre, setClienteNombre] = useState('');
+export interface LineaResumenMostrador {
+  id: number;
+  nombre: string;
+  cantidad: number;
+  precio: number;
+  subtotal: number;
+}
 
-  const disponibles = items.filter((item) => item.disponible);
+export interface ResumenMostrador {
+  datos: CrearMostradorInput;
+  lineas: LineaResumenMostrador[];
+  total: number;
+}
+
+interface Props {
+  items: MenuItem[];
+  onContinuar: (resumen: ResumenMostrador) => void;
+  seleccionInicial?: Record<number, number>;
+  clienteInicial?: string;
+}
+
+export function PedidoMostrador({
+  items,
+  onContinuar,
+  seleccionInicial = {},
+  clienteInicial = '',
+}: Props) {
+  const [cantidades, setCantidades] = useState<Record<number, number>>(seleccionInicial);
+  const [clienteNombre, setClienteNombre] = useState(clienteInicial);
+  const [busqueda, setBusqueda] = useState('');
+  const [categoria, setCategoria] = useState<string | null>(null);
+
+  const disponibles = useMemo(() => items.filter((item) => item.disponible), [items]);
+
+  const categorias = useMemo(() => {
+    const unicas = new Set<string>();
+    for (const item of disponibles) {
+      if (item.categoria) {
+        unicas.add(item.categoria);
+      }
+    }
+    return [...unicas].sort((a, b) => a.localeCompare(b, 'es'));
+  }, [disponibles]);
+
+  const filtrados = useMemo(() => {
+    const termino = normalizar(busqueda.trim());
+    return disponibles.filter((item) => {
+      const coincideCategoria = categoria === null || item.categoria === categoria;
+      if (!coincideCategoria) {
+        return false;
+      }
+      if (!termino) {
+        return true;
+      }
+      return (
+        normalizar(item.nombre).includes(termino) ||
+        normalizar(item.descripcion ?? '').includes(termino)
+      );
+    });
+  }, [busqueda, categoria, disponibles]);
+
+  const lineas: LineaResumenMostrador[] = disponibles
+    .filter((item) => (cantidades[item.id] ?? 0) > 0)
+    .map((item) => ({
+      id: item.id,
+      nombre: item.nombre,
+      cantidad: cantidades[item.id] ?? 0,
+      precio: item.precio,
+      subtotal: item.precio * (cantidades[item.id] ?? 0),
+    }));
+
+  const total = lineas.reduce((suma, linea) => suma + linea.subtotal, 0);
 
   function cambiar(id: number, delta: number) {
     setCantidades((actual) => {
-      const siguiente = Math.max(0, (actual[id] ?? 0) + delta);
+      const siguiente = Math.min(99, Math.max(0, (actual[id] ?? 0) + delta));
       return { ...actual, [id]: siguiente };
     });
   }
 
-  const seleccion: ItemMostradorInput[] = disponibles
-    .filter((item) => (cantidades[item.id] ?? 0) > 0)
-    .map((item) => ({ menu_dia_id: item.id, cantidad: cantidades[item.id] ?? 0 }));
-
-  const total = disponibles.reduce(
-    (suma, item) => suma + item.precio * (cantidades[item.id] ?? 0),
-    0,
-  );
-
   function enviar(evento: FormEvent) {
     evento.preventDefault();
-    onRegistrar({
-      items: seleccion,
+    if (lineas.length === 0) {
+      return;
+    }
+    const datos: CrearMostradorInput = {
+      items: lineas.map<ItemMostradorInput>((linea) => ({
+        menu_dia_id: linea.id,
+        cantidad: linea.cantidad,
+      })),
       cliente_nombre: clienteNombre.trim() ? clienteNombre.trim() : undefined,
-    });
+    };
+    onContinuar({ datos, lineas, total });
   }
 
   if (disponibles.length === 0) {
@@ -61,7 +128,7 @@ export function PedidoMostrador({ items, onRegistrar, enviando = false, error = 
 
   return (
     <form className="space-y-4" onSubmit={enviar} noValidate>
-      <div className="space-y-1 sm:max-w-xs">
+      <div className="space-y-1 sm:max-w-sm">
         <Label htmlFor="mostrador-cliente">Cliente (opcional)</Label>
         <Input
           id="mostrador-cliente"
@@ -71,54 +138,75 @@ export function PedidoMostrador({ items, onRegistrar, enviando = false, error = 
         />
       </div>
 
-      <ul className="divide-y divide-surface-container-high overflow-hidden rounded-xl border border-outline-variant/70 bg-white shadow-sm">
-        {disponibles.map((item) => {
-          const cantidad = cantidades[item.id] ?? 0;
-          return (
-            <li key={item.id} className="flex flex-wrap items-center gap-3 px-4 py-3.5">
-              <div className="min-w-0 flex-1">
-                <p className="font-medium text-on-surface">{item.nombre}</p>
-                <div className="mt-1 flex items-center gap-2">
-                  <span className="font-heading text-sm font-bold text-primary">
-                    {formatearPrecio(item.precio)}
-                  </span>
-                  {item.especial && <Badge tono="especial">Especial</Badge>}
-                </div>
-              </div>
-              <Stepper
-                cantidad={cantidad}
-                onCambiar={(delta) => cambiar(item.id, delta)}
-                nombre={item.nombre}
-                testid={`cantidad-mostrador-${item.id}`}
-              />
-            </li>
-          );
-        })}
-      </ul>
-
-      <div className="flex items-center justify-between rounded-xl border border-outline-variant/70 bg-surface-container-low p-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-on-surface-variant">Total</span>
-          <Badge tono="neutral">{seleccion.length} platillo(s)</Badge>
-        </div>
-        <span
-          data-testid="total-mostrador"
-          className="font-heading text-3xl font-extrabold tracking-tight text-primary"
-        >
-          {formatearPrecio(total)}
-        </span>
+      <div className="space-y-3">
+        <Buscador
+          etiqueta="Buscar producto"
+          value={busqueda}
+          onChange={(evento) => setBusqueda(evento.target.value)}
+        />
+        <ChipsCategoria
+          categorias={categorias}
+          seleccionada={categoria}
+          onSeleccionar={setCategoria}
+        />
       </div>
 
-      {error && (
-        <p className="text-sm text-error" role="alert">
-          {error}
-        </p>
+      {filtrados.length === 0 ? (
+        <EmptyState
+          titulo="Sin resultados"
+          descripcion={`No hay productos que coincidan con “${busqueda || categoria}”.`}
+        />
+      ) : (
+        <ul className="divide-y divide-surface-container-high overflow-hidden rounded-xl border border-outline-variant/70 bg-surface-container-lowest shadow-sm">
+          {filtrados.map((item) => {
+            const cantidad = cantidades[item.id] ?? 0;
+            return (
+              <li key={item.id} className="flex flex-wrap items-center gap-3 px-4 py-3.5">
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-on-surface">{item.nombre}</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <span className="font-heading text-sm font-bold text-primary">
+                      {formatearPrecio(item.precio)}
+                    </span>
+                    {item.categoria && <Badge tono="neutral">{item.categoria}</Badge>}
+                    {item.especial && <Badge tono="especial">Especial</Badge>}
+                  </div>
+                </div>
+                <Stepper
+                  cantidad={cantidad}
+                  onCambiar={(delta) => cambiar(item.id, delta)}
+                  nombre={item.nombre}
+                  testid={`cantidad-mostrador-${item.id}`}
+                />
+              </li>
+            );
+          })}
+        </ul>
       )}
 
-      <Button type="submit" disabled={seleccion.length === 0 || enviando} className="w-full min-h-12 text-base">
-        <IconoAgregar className="h-5 w-5" />
-        {enviando ? 'Registrando…' : 'Registrar pedido'}
-      </Button>
+      <div className="sticky bottom-20 z-10 rounded-xl border border-outline-variant/70 bg-surface-container-lowest/95 p-4 shadow-lg backdrop-blur lg:bottom-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-on-surface-variant">
+              {lineas.length} platillo{lineas.length === 1 ? '' : 's'}
+            </p>
+            <p
+              data-testid="total-mostrador"
+              className="font-heading text-3xl font-extrabold tracking-tight text-primary"
+            >
+              {formatearPrecio(total)}
+            </p>
+          </div>
+          <Button
+            type="submit"
+            disabled={lineas.length === 0}
+            className="min-h-12 min-w-40 text-base"
+          >
+            <IconoAgregar className="h-5 w-5" />
+            Ver cobro
+          </Button>
+        </div>
+      </div>
     </form>
   );
 }

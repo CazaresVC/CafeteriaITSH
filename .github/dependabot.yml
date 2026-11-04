@@ -1,0 +1,44 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: America/Mexico_City
+    open-pull-requests-limit: 5
+    groups:
+      backend-dev:
+        dependency-type: development
+      backend-prod:
+        dependency-type: production
+    labels:
+      - dependencies
+      - backend
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: America/Mexico_City
+    open-pull-requests-limit: 5
+    groups:
+      frontend-dev:
+        dependency-type: development
+      frontend-prod:
+        dependency-type: production
+    labels:
+      - dependencies
+      - frontend
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
+      - ci

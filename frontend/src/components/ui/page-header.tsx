@@ -19,7 +19,7 @@ export function PageHeader({ titulo, descripcion, icono, acciones, className }: 
           </span>
         )}
         <div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight text-on-surface">
+          <h1 className="font-heading text-[28px] leading-9 font-bold tracking-tight text-on-surface">
             {titulo}
           </h1>
           {descripcion && (

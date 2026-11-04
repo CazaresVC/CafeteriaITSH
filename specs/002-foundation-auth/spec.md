@@ -92,6 +92,16 @@ deshabilitar una cuenta existente; cada cuenta accede solo a su módulo.
 - Usuario operativo deshabilitado mientras tenía una sesión considerada válida.
 - Datos de registro inválidos (correo con formato incorrecto, contraseña demasiado débil).
 
+## Clarifications
+
+### Session 2026-10-31
+
+- Q: ¿Cómo se transporta la sesión? → A: JWT HS256 en cookie `httpOnly` + `SameSite=Lax`, `Secure` en producción y expiración configurable.
+- Q: ¿Qué algoritmo y coste se usan para las contraseñas? → A: `bcryptjs` con coste 10.
+- Q: ¿Se usa un ORM? → A: No; `mysql2/promise` con SQL parametrizado.
+- Q: ¿Dónde se valida la entrada? → A: Con `zod` en backend y en los formularios; nunca se confía solo en el frontend.
+- Q: ¿Cómo se aplica la autorización? → A: `requireAuth` valida el token y el usuario activo; `requireRole` restringe por rol y el rol se re-verifica contra la base de datos.
+
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
